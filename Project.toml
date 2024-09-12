@@ -1,0 +1,13 @@
+name = "SmoQyKPMCore"
+uuid = "30e33e58-a96a-4fec-8c75-57692dd3ff18"
+authors = ["Benjamin Cohen-Stead <benwcs@gmail.com>", "Steven Johnston <sjohn145@utk.edu>", "Kipton Barros <kbarros@lanl.gov>"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
