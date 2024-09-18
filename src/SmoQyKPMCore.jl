@@ -3,17 +3,16 @@ module SmoQyKPMCore
 using LinearAlgebra
 using FFTW
 
-import Base: resize!
-import LinearAlgebra: mul!
-
-# define private user function
-include("utility.jl")
-
 # functional api implementation of KPM algorithm
 include("kpm.jl")
+export kpm_coefs, kpm_coefs!
+export kpm_mul, kpm_mul!
+export kpm_eval, kpm_eval!
+export apply_jackson_kernel, apply_jackson_kernel!
 
-# define KPMExapnsion type for more convenient user interface
 include("KPMExpansion.jl")
+export KPMExpansion
+export update_expansion!, update_expansion_bounds!, update_expansion_order!
 
 # ensure FFTW uses only a single thread
 function __init__()

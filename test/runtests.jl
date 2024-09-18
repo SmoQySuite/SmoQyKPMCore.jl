@@ -1,6 +1,7 @@
 using SmoQyKPMCore
 using Test
+using TestItemRunner
 
 @testset "SmoQyKPMCore.jl" begin
-    # Write your tests here.
+    @run_package_tests
 end
