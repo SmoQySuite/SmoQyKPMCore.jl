@@ -34,6 +34,15 @@ Note that the [`eigmin`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#
 and [`eigmax`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.eigmax) routines have
 [specialized implementations](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#Elementary-operations) for a
 [`SymTridiagonal`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.SymTridiagonal) matrix type.
+
+# Similar generalizations of Lanczos have been considered in [2] and [3].
+#
+# 1. C. C. Paige, IMA J. Appl. Math., 373-381 (1972),
+# https://doi.org/10.1093%2Fimamat%2F10.3.373.
+# 2. H. A. van der Vorst, Math. Comp. 39, 559-561 (1982),
+# https://doi.org/10.1090/s0025-5718-1982-0669648-0
+# 3. M. Grüning, A. Marini, X. Gonze, Comput. Mater. Sci. 50, 2148-2156 (2011),
+# https://doi.org/10.1016/j.commatsci.2011.02.021.
 """
 function lanczos(niters, v, A, S = I, rng = Random.default_rng())
 
@@ -67,6 +76,15 @@ based on the contents of the vectors `αs` and `βs`. Note that the [`eigmin`](h
 and [`eigmax`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.eigmax) routines have
 [specialized implementations](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#Elementary-operations) for a
 [`SymTridiagonal`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.SymTridiagonal) matrix type.
+
+# Similar generalizations of Lanczos have been considered in [2] and [3].
+#
+# 1. C. C. Paige, IMA J. Appl. Math., 373-381 (1972),
+# https://doi.org/10.1093%2Fimamat%2F10.3.373.
+# 2. H. A. van der Vorst, Math. Comp. 39, 559-561 (1982),
+# https://doi.org/10.1090/s0025-5718-1982-0669648-0
+# 3. M. Grüning, A. Marini, X. Gonze, Comput. Mater. Sci. 50, 2148-2156 (2011),
+# https://doi.org/10.1016/j.commatsci.2011.02.021.
 """
 function lanczos!(
     αs::AbstractVector, βs::AbstractVector, v::AbstractVector,

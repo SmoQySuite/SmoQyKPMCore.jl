@@ -12,7 +12,7 @@
 # ```math
 # f(\epsilon) = \frac{1}{1+e^{\beta (\epsilon-\mu)}} = \frac{1}{2} \left[ 1 + \tanh\left(\tfrac{\beta(\epsilon-\mu)}{2}\right) \right]
 # ```
-# is the Fermi function, with ``\beta = 1/T`` is the inverse temperature and ``\mu`` is the chemical potential.
+# is the Fermi function, with ``\beta = 1/T`` the inverse temperature and ``\mu`` the chemical potential.
 # Here we will applying the kernel polynomial method (KPM) algorithm to approximate the density matrix ``\rho`` by
 # a Chebyshev polynomial expansion.
 
@@ -58,10 +58,9 @@ fermi(ϵ, μ, β) = (1+tanh(β*(ϵ-μ)/2))/2
 ρ = U * Diagonal(fermi.(ϵ, μ, β)) * adjoint(U)
 
 # Now let use the KPM to approximate ``\rho``. We will need to define the order ``M`` of the expansion
-# and give approximate bounds for the egenspectrum of ``H``, making sure to overestimate the the true
-# interval spanned by the egienvalues of ``H``. Note that because we are considering the simple
-# non-interacting model here, the exact eigenspectrum of ``H`` is known and spans
-# the interval ``\epsilon \in [-2t, 2t].``
+# and give approximate bounds for the eigenspectrum of ``H``, making sure to overestimate the the true
+# interval spanned by the eigenvalues of ``H``. Because we are considering the simple non-interacting model,
+# the exact eigenspectrum of ``H`` is known and spans the interval ``\epsilon \in [-2t, 2t].``
 
 ## Define eigenspectrum bounds.
 bounds = (-3.0t, 3.0t)
