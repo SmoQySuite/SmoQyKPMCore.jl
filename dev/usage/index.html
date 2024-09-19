@@ -64,10 +64,10 @@ kpm_expansion = KPMExpansion(x -&gt; fermi(x, μ, β), bounds, M);</code></pre><
 ρ_kpm = similar(H)
 
 # Initialize additional matrices to avoid dynamic memory allocation.
-T1, T2, T3 = similar(H), similar(H), similar(H)
+mtmp = zeros(L,L,3)
 
 # Calculate KPM density matrix approximation.
-kpm_eval!(ρ_kpm, H, kpm_expansion, T1, T2, T3)
+kpm_eval!(ρ_kpm, H, kpm_expansion, mtmp)
 
 # Check how good an approximation it is.
 println(&quot;Matrix Error = &quot;, norm(ρ_kpm - ρ)/norm(ρ) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 0.01669022782185739</code></pre><p>It is also possible to efficiently multiply vectors by KPM approximation to the density matrix <span>$\rho$</span>. Let us test this functionality on a random vector, seeing how accurate the result is.</p><pre><code class="language-julia hljs"># Initialize random vector.
@@ -79,14 +79,14 @@ v = randn(L)
 # Initialize vector to contain approximate product with densith matrix.
 ρv_kpm = similar(v)
 
-# Initialize vectrs of avoid dynamic memory allocation.
-α1, α2, α3 = similar(v), similar(v), similar(v)
+# Initialize to avoid dynamic memory allocation.
+vtmp = zeros(L, 3)
 
 # Calculate approximate product with density matrix.
-kpm_mul!(ρv_kpm, H, kpm_expansion, v, α1, α2, α3)
+kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
-println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Vector Error = 0.013536063039301764</code></pre><p>Let us now provide the KPM approximation with better bounds on the eigenspectrum and also increase the order the of the expansion and see how the result improves.</p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
+println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Vector Error = 0.01779911677940933</code></pre><p>Let us now provide the KPM approximation with better bounds on the eigenspectrum and also increase the order the of the expansion and see how the result improves.</p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
 bounds = (-2.5t, 2.5t)
 
 # Define order of Chebyshev expansion used in KPM approximation.
@@ -96,14 +96,14 @@ M = 100
 update_kpmexpansion!(kpm_expansion, x -&gt; fermi(x, μ, β), bounds, M)
 
 # Calculate KPM density matrix approximation.
-kpm_eval!(ρ_kpm, H, kpm_expansion, T1, T2, T3)
+kpm_eval!(ρ_kpm, H, kpm_expansion, mtmp)
 
 # Check how good an approximation it is.
 println(&quot;Matrix Error = &quot;, norm(ρ_kpm - ρ)/norm(ρ) )
 
 # Calculate approximate product with density matrix.
-kpm_mul!(ρv_kpm, H, kpm_expansion, v, α1, α2, α3)
+kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
 println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 1.031960839804449e-14
-Vector Error = 8.293952157865604e-15</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 19 September 2024 18:35">Thursday 19 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Vector Error = 1.2809626002891695e-14</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 19 September 2024 18:59">Thursday 19 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
