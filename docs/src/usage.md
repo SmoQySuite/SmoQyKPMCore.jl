@@ -97,10 +97,10 @@ Now let us test and see how good a job it does approximating the density matrix 
 ρ_kpm = similar(H)
 
 # Initialize additional matrices to avoid dynamic memory allocation.
-T1, T2, T3 = similar(H), similar(H), similar(H)
+mtmp = zeros(L,L,3)
 
 # Calculate KPM density matrix approximation.
-kpm_eval!(ρ_kpm, H, kpm_expansion, T1, T2, T3)
+kpm_eval!(ρ_kpm, H, kpm_expansion, mtmp)
 
 # Check how good an approximation it is.
 println("Matrix Error = ", norm(ρ_kpm - ρ)/norm(ρ) )
@@ -119,11 +119,11 @@ v = randn(L)
 # Initialize vector to contain approximate product with densith matrix.
 ρv_kpm = similar(v)
 
-# Initialize vectrs of avoid dynamic memory allocation.
-α1, α2, α3 = similar(v), similar(v), similar(v)
+# Initialize to avoid dynamic memory allocation.
+vtmp = zeros(L, 3)
 
 # Calculate approximate product with density matrix.
-kpm_mul!(ρv_kpm, H, kpm_expansion, v, α1, α2, α3)
+kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
 println("Vector Error = ", norm(ρv_kpm - ρv) / norm(ρv) )
@@ -143,13 +143,13 @@ M = 100
 update_kpmexpansion!(kpm_expansion, x -> fermi(x, μ, β), bounds, M)
 
 # Calculate KPM density matrix approximation.
-kpm_eval!(ρ_kpm, H, kpm_expansion, T1, T2, T3)
+kpm_eval!(ρ_kpm, H, kpm_expansion, mtmp)
 
 # Check how good an approximation it is.
 println("Matrix Error = ", norm(ρ_kpm - ρ)/norm(ρ) )
 
 # Calculate approximate product with density matrix.
-kpm_mul!(ρv_kpm, H, kpm_expansion, v, α1, α2, α3)
+kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
 println("Vector Error = ", norm(ρv_kpm - ρv) / norm(ρv) )

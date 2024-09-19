@@ -54,23 +54,18 @@ end
 
 @doc raw"""
     kpm_mul(
-        A, coefs::AbstractVector, bounds, v::T,
-        α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+        A, coefs::AbstractVector, bounds, v::T, tmp = zeros(eltype(v), size(v)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 Evaluate and return the vector ``v^\prime = F(A) \cdot v`` where ``F(A)`` is represented by the Chebyshev expansion.
 For more information refer to [`kpm_mul!`](@ref).
 """
 function kpm_mul(
-    A, coefs::AbstractVector, bounds, v::T,
-    α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+    A, coefs::AbstractVector, bounds, v::T, tmp = zeros(eltype(v), size(v)..., 3)
 ) where {T<:AbstractVecOrMat}
 
     v′ = similar(v)
-    kpm_mul!(
-        v′, A, coefs, bounds, v,
-        α₁, α₂, α₃
-    )
+    kpm_mul!(v′, A, coefs, bounds, v, tmp)
 
     return v′
 end
@@ -78,7 +73,7 @@ end
 @doc raw"""
     kpm_mul!(
         v′::T, A, coefs::AbstractVector, bounds, v::T,
-        α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+        tmp = zeros(eltype(v), size(v)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 Evaluates ``v^\prime = F(A) \cdot v``, writing the result to `v′`, where ``F(A)`` is represented by the Chebyshev expansion.
@@ -87,13 +82,17 @@ Here `A` is either a function that can be called as `A(u,v)` to evaluate
 The vector `coefs` contains Chebyshev expansion coefficients to approximate ``F(A)``, where the eigenspectrum
 of ``A`` is contained in the interval `(bounds[1], bounds[2])` specified by the `bounds` argument.
 The vector `v` is vector getting multiplied by the Chebyshev expansion for ``F(A)``.
-Lastly, the vectors `(α₁, α₂, α₃)` are passed to avoid dynamic memory allocations.
+Lastly, `tmp` is an array used to avoid dynamic memory allocations.
 """
 function kpm_mul!(
     v′::T, A, coefs::AbstractVector, bounds, v::T,
-    α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+    tmp = zeros(eltype(v), size(v)..., 3)
 ) where {T<:AbstractVecOrMat}
 
+
+    α₁ = selectdim(tmp, ndims(tmp), 1)
+    α₂ = selectdim(tmp, ndims(tmp), 2)
+    α₃ = selectdim(tmp, ndims(tmp), 3)
     # calulate rescaling coefficients
     a, b = _rescaling_coefficients(bounds)
     # α₁ = v
@@ -175,20 +174,23 @@ end
 
 @doc raw"""
     kpm_eval!(
-        F::T, A, coefs::AbstractVector, bounds,
-        T₁::T = similar(F), T₂::T = similar(F), T₃::T = similar(F)
-    ) where {T<:AbstractMatrix}
+        F::AbstractMatrix, A, coefs::AbstractVector, bounds,
+        tmp = zeros(eltype(F), size(F)..., 3)
+    )
 
 Evaluate and write the matrix ``F(A)`` to `F`, where ``A`` is an operator with strictly real eigenvalues that
 fall in the interval `(bounds[1], bounds[2])` specified by the `bounds` argument, and the function
 ``F(\bullet)`` is represented by a Chebyshev expansion with coefficients given by the vector `coefs`.
-Lastly, the matrices `(T₁, T₂, T₃)` are used to avoid dynamic memory allocations.
+Lastly, `tmp` is used to avoid dynamic memory allocations.
 """
 function kpm_eval!(
-    F::T, A, coefs::AbstractVector, bounds,
-    T₁::T = similar(F), T₂::T = similar(F), T₃::T = similar(F)
-) where {T<:AbstractMatrix}
+    F::AbstractMatrix, A, coefs::AbstractVector, bounds,
+    tmp = zeros(eltype(F), size(F)..., 3)
+)
 
+    T₁ = selectdim(tmp, 3, 1)
+    T₂ = selectdim(tmp, 3, 2)
+    T₃ = selectdim(tmp, 3, 3)
     # calulate rescaling coefficients
     a, b = _rescaling_coefficients(bounds)
     # T₁ = I

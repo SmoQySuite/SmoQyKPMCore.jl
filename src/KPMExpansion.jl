@@ -135,22 +135,22 @@ end
 @doc raw"""
     kpm_mul!(
         v′::T, A, kpm_expansion::KPMExpansion, v::T,
-        α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+        tmp = zeros(eltype(v), size(v)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 Evaluates ``v^\prime = F(A) \cdot v``, writing the result to `v′`, where ``F(A)`` is represented by the Chebyshev expansion.
 Here `A` is either a function that can be called as `A(u,v)` to evaluate
 ``u = A\cdot v``, modifying `u` in-place, or is a type for which the operation `mul!(u, A, v)` is defined.
-Lastly, the vectors `(α₁, α₂, α₃)` are passed to avoid dynamic memory allocations.
+Lastly, the array `tmp` is used to avoid dynamic memory allocations.
 """
 function kpm_mul!(
     v′::T, A, kpm_expansion::KPMExpansion, v::T,
-    α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+    tmp = zeros(eltype(v), size(v)..., 3)
 ) where {T<:AbstractVecOrMat}
 
     (; M, bounds, buf) = kpm_expansion
     coefs = @view buf[1:M]
-    kpm_mul!(v′, A, coefs, bounds, v, α₁, α₂, α₃)
+    kpm_mul!(v′, A, coefs, bounds, v, tmp)
 
     return nothing
 end
@@ -188,22 +188,22 @@ end
 
 @doc raw"""
     kpm_eval!(
-        F::T, A, kpm_expansion::KPMExpansion,
-        T₁::T = similar(F), T₂::T = similar(F), T₃::T = similar(F)
-    ) where {T<:AbstractMatrix}
+        F::AbstractMatrix, A, kpm_expansion::KPMExpansion,
+        tmp = zeros(eltype(F), size(F)..., 3)
+    )
 
 Evaluate and write the matrix ``F(A)`` to `F`, where ``A`` is an operator with strictly real eigenvalues
 and the function ``F(\bullet)`` is represented by a Chebyshev expansion with coefficients given by the vector `coefs`.
-Lastly, the matrices `(T₁, T₂, T₃)` are used to avoid dynamic memory allocations.
+Lastly, the array `tmp` is used to avoid dynamic memory allocations.
 """
 function kpm_eval!(
-    F::T, A, kpm_expansion::KPMExpansion,
-    T₁::T = similar(F), T₂::T = similar(F), T₃::T = similar(F)
-) where {T<:AbstractMatrix}
+    F::AbstractMatrix, A, kpm_expansion::KPMExpansion,
+    tmp = zeros(eltype(F), size(F)..., 3)
+)
 
     (; M, bounds, buf) = kpm_expansion
     coefs = @view buf[1:M]
-    kpm_eval!(F, A, coefs, bounds, T₁, T₂, T₃)
+    kpm_eval!(F, A, coefs, bounds, tmp)
 
     return nothing
 end
