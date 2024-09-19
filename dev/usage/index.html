@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Usage · SmoQyKPMCore.jl</title><meta name="title" content="Usage · SmoQyKPMCore.jl"/><meta property="og:title" content="Usage · SmoQyKPMCore.jl"/><meta property="twitter:title" content="Usage · SmoQyKPMCore.jl"/><meta name="description" content="Documentation for SmoQyKPMCore.jl."/><meta property="og:description" content="Documentation for SmoQyKPMCore.jl."/><meta property="twitter:description" content="Documentation for SmoQyKPMCore.jl."/><meta property="og:url" content="https://SmoQySuite.github.io/SmoQyKPMCore.jl/usage/"/><meta property="twitter:url" content="https://SmoQySuite.github.io/SmoQyKPMCore.jl/usage/"/><link rel="canonical" href="https://SmoQySuite.github.io/SmoQyKPMCore.jl/usage/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">SmoQyKPMCore.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Usage</a></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Usage</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Usage</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SmoQySuite/SmoQyKPMCore.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SmoQySuite/SmoQyKPMCore.jl/blob/main/examples/usage.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Usage"><a class="docs-heading-anchor" href="#Usage">Usage</a><a id="Usage-1"></a><a class="docs-heading-anchor-permalink" href="#Usage" title="Permalink"></a></h1><p>Here we demonstrate the basic usage for the <a href="https://github.com/SmoQySuite/SmoQyKPMCore.jl">SmoQyKPMCore</a> package. Let us consider a 1D chain tight-binding model</p><p class="math-container">\[\hat{H} = -t \sum_{i,\sigma} (\hat{c}_{i+1,\sigma}^\dagger \hat{c}_{i,\sigma} + {\rm H.c.})
+        = \sum_\sigma \hat{c}_{i,\sigma}^\dagger [H_{i,j}] \hat{c}_{j,\sigma},\]</p><p>where <span>$\hat{c}_{i,\sigma}^\dagger \ (\hat{c}_{i,\sigma})$</span> creates (annihilates) a spin-<span>$\sigma$</span> electron on site <span>$i$</span> in the lattice, and <span>$t$</span> is the nearest-neighbor hopping amplitude. With <span>$H$</span> the Hamiltonian matrix, the corresponding density matrix is given by <span>$\rho = f(H)$</span> where</p><p class="math-container">\[f(\epsilon) = \frac{1}{1+e^{\beta (\epsilon-\mu)}} = \frac{1}{2} \left[ 1 + \tanh\left(\tfrac{\beta(\epsilon-\mu)}{2}\right) \right]\]</p><p>is the Fermi function, with <span>$\beta = 1/T$</span> is the inverse temperature and <span>$\mu$</span> is the chemical potential. Here we will applying the kernel polynomial method (KPM) algorithm to approximate the density matrix <span>$\rho$</span> by a Chebyshev polynomial expansion.</p><p>Let us begin by importing the packages we need.</p><pre><code class="language-julia hljs">using LinearAlgebra
+using SmoQyKPMCore</code></pre><p>Next, let us define the relevant system parameters.</p><pre><code class="language-julia hljs"># Nearest-neighbor hopping amplitude.
+t = 1.0
+
+# Chemical potential.
+μ = 0.0
+
+# System size.
+L = 16
+
+# Inverse temperature.
+β = 4.0;</code></pre><p>Now we need to construct the Hamiltonian matrix <span>$H$</span>.</p><pre><code class="language-julia hljs">H = zeros(L,L)
+for i in 1:L
+    j = mod1(i+1,L)
+    H[j,i], H[i,j] = -t, -t
+end
+H</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">16×16 Matrix{Float64}:
+  0.0  -1.0   0.0   0.0   0.0   0.0  …   0.0   0.0   0.0   0.0   0.0  -1.0
+ -1.0   0.0  -1.0   0.0   0.0   0.0      0.0   0.0   0.0   0.0   0.0   0.0
+  0.0  -1.0   0.0  -1.0   0.0   0.0      0.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0  -1.0   0.0  -1.0   0.0      0.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0  -1.0   0.0  -1.0      0.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0  -1.0   0.0  …   0.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0  -1.0      0.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0      0.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0      0.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0     -1.0   0.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0  …   0.0  -1.0   0.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0     -1.0   0.0  -1.0   0.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0      0.0  -1.0   0.0  -1.0   0.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0      0.0   0.0  -1.0   0.0  -1.0   0.0
+  0.0   0.0   0.0   0.0   0.0   0.0      0.0   0.0   0.0  -1.0   0.0  -1.0
+ -1.0   0.0   0.0   0.0   0.0   0.0  …   0.0   0.0   0.0   0.0  -1.0   0.0</code></pre><p>We also need to define the Fermi function.</p><pre><code class="language-julia hljs"># Fermi function.
+fermi(ϵ, μ, β) = (1+tanh(β*(ϵ-μ)/2))/2</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">fermi (generic function with 1 method)</code></pre><p>Let us calculate the exact density matrix <span>$\rho$</span> so that we may asses the accuracy of the KPM method.</p><pre><code class="language-julia hljs"># Diagonalize the Hamiltonian matrix.
+ϵ, U = eigen(H)
+
+# Calculate the density matrix.
+ρ = U * Diagonal(fermi.(ϵ, μ, β)) * adjoint(U)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">16×16 Matrix{Float64}:
+  0.5          -0.30913      -2.70673e-16  …   4.16315e-16  -0.30913
+ -0.30913       0.5          -0.30913          0.0826932     2.56734e-16
+ -2.42894e-16  -0.30913       0.5              6.92028e-18   0.0826932
+  0.0826932    -2.91452e-16  -0.30913         -0.0320635     2.77509e-17
+  1.17929e-16   0.0826932    -3.26184e-16      1.38592e-17  -0.0320635
+ -0.0320635     9.0187e-17    0.0826932    …   0.00866812   -9.71492e-17
+ -1.73505e-16  -0.0320635     2.21989e-16      1.80393e-16   0.00866812
+  0.00866812   -1.04102e-16  -0.0320635        0.00866812    6.93843e-17
+  1.38745e-16   0.00866812   -1.31895e-16     -1.52674e-16   0.00866812
+  0.00866812    2.01209e-16   0.00866812      -0.0320635    -1.17966e-16
+ -1.39104e-17   0.00866812   -2.08223e-16  …   1.3182e-16   -0.0320635
+ -0.0320635     6.24314e-17   0.00866812       0.0826932     2.0812e-17
+  1.38452e-17  -0.0320635     2.08111e-16     -2.63697e-16   0.0826932
+  0.0826932    -7.21664e-16  -0.0320635       -0.30913       2.8449e-16
+  4.16301e-16   0.0826932     2.07608e-17      0.5          -0.30913
+ -0.30913       2.49782e-16   0.0826932    …  -0.30913       0.5</code></pre><p>Now let use the KPM to approximate <span>$\rho$</span>. We will need to define the order <span>$M$</span> of the expansion and give approximate bounds for the egenspectrum of <span>$H$</span>, making sure to overestimate the the true interval spanned by the egienvalues of <span>$H$</span>. Note that because we are considering the simple non-interacting model here, the exact eigenspectrum of <span>$H$</span> is known and spans the interval <span>$\epsilon \in [-2t, 2t].$</span></p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
+bounds = (-3.0t, 3.0t)
+
+# Define order of Chebyshev expansion used in KPM approximation.
+M = 10
+
+# Initialize expansion.
+kpm_expansion = KPMExpansion(x -&gt; fermi(x, μ, β), bounds, M);</code></pre><p>Now let us test and see how good a job it does approximating the density matrix <span>$\rho$</span>.</p><pre><code class="language-julia hljs"># Initialize KPM density matrix approxiatmion
+ρ_kpm = similar(H)
+
+# Initialize additional matrices to avoid dynamic memory allocation.
+T1, T2, T3 = similar(H), similar(H), similar(H)
+
+# Calculate KPM density matrix approximation.
+kpm_eval!(ρ_kpm, H, kpm_expansion, T1, T2, T3)
+
+# Check how good an approximation it is.
+println(&quot;Matrix Error = &quot;, norm(ρ_kpm - ρ)/norm(ρ) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 0.01669022782185739</code></pre><p>It is also possible to efficiently multiply vectors by KPM approximation to the density matrix <span>$\rho$</span>. Let us test this functionality on a random vector, seeing how accurate the result is.</p><pre><code class="language-julia hljs"># Initialize random vector.
+v = randn(L)
+
+# Calculate exact product with density matrix.
+ρv = ρ * v
+
+# Initialize vector to contain approximate product with densith matrix.
+ρv_kpm = similar(v)
+
+# Initialize vectrs of avoid dynamic memory allocation.
+α1, α2, α3 = similar(v), similar(v), similar(v)
+
+# Calculate approximate product with density matrix.
+kpm_mul!(ρv_kpm, H, kpm_expansion, v, α1, α2, α3)
+
+# Check how good the approximation is.
+println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Vector Error = 0.013065551138993627</code></pre><p>Let us now provide the KPM approximation with better bounds on the eigenspectrum and also increase the order the of the expansion and see how the result improves.</p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
+bounds = (-2.5t, 2.5t)
+
+# Define order of Chebyshev expansion used in KPM approximation.
+M = 100
+
+# Update KPM approximation.
+update_expansion!(kpm_expansion, x -&gt; fermi(x, μ, β), bounds, M)
+
+# Calculate KPM density matrix approximation.
+kpm_eval!(ρ_kpm, H, kpm_expansion, T1, T2, T3)
+
+# Check how good an approximation it is.
+println(&quot;Matrix Error = &quot;, norm(ρ_kpm - ρ)/norm(ρ) )
+
+# Calculate approximate product with density matrix.
+kpm_mul!(ρv_kpm, H, kpm_expansion, v, α1, α2, α3)
+
+# Check how good the approximation is.
+println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 1.031960839804449e-14
+Vector Error = 1.4079877488710268e-14</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 19 September 2024 15:54">Thursday 19 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
