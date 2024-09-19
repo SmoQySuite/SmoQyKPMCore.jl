@@ -12,7 +12,7 @@ export apply_jackson_kernel, apply_jackson_kernel!
 
 include("KPMExpansion.jl")
 export KPMExpansion
-export update_expansion!, update_expansion_bounds!, update_expansion_order!
+export update_kpmexpansion!, update_kpmexpansion_bounds!, update_kpmexpansion_order!
 
 # ensure FFTW uses only a single thread
 function __init__()

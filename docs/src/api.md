@@ -5,9 +5,9 @@ an instance of the [`KPMExpansion`](@ref) type as an argument, and a lower
 level one that does not.
 
 - [`KPMExpansion`](@ref)
-- [`update_expansion!`](@ref)
-- [`update_expansion_bounds!`](@ref)
-- [`update_expansion_order!`](@ref)
+- [`update_kpmexpansion!`](@ref)
+- [`update_kpmexpansion_bounds!`](@ref)
+- [`update_kpmexpansion_order!`](@ref)
 - [`kpm_coefs`](@ref)
 - [`kpm_coefs!`](@ref)
 - [`kpm_mul`](@ref)
@@ -20,9 +20,9 @@ level one that does not.
 ```@docs
 KPMExpansion
 KPMExpansion(::Function, ::Any, ::Int, ::Int)
-update_expansion!
-update_expansion_bounds!
-update_expansion_order!
+update_kpmexpansion!
+update_kpmexpansion_bounds!
+update_kpmexpansion_order!
 kpm_coefs
 kpm_coefs!
 kpm_mul

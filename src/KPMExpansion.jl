@@ -51,7 +51,7 @@ end
 
 
 @doc raw"""
-    update_expansion!(
+    update_kpmexpansion!(
         kpm_expansion::KPMExpansion{T}, func::Function, bounds, M::Int, N::Int = 2*M
     ) where {T<:AbstractFloat}
 
@@ -59,7 +59,7 @@ In-place update an instance of [`KPMExpansion`](@ref) to reflect new values for 
 expansion order `M`, and number of points at which the expanded function is evaluated when computing the
 expansion coefficients. This includes recomputing the expansion coefficients.
 """
-function update_expansion!(
+function update_kpmexpansion!(
     kpm_expansion::KPMExpansion{T}, func::Function, bounds, M::Int, N::Int = 2*M
 ) where {T<:AbstractFloat}
 
@@ -76,14 +76,14 @@ end
 
 
 @doc raw"""
-    update_expansion_bounds!(
+    update_kpmexpansion_bounds!(
         kpm_expansion::KPMExpansion{T}, func::Function, bounds
     ) where {T<:AbstractFloat}
 
 In-place update an instance of [`KPMExpansion`](@ref) to reflect new values for eigenspectrum `bounds`,
 recomputing the expansion coefficients.
 """
-function update_expansion_bounds!(
+function update_kpmexpansion_bounds!(
     kpm_expansion::KPMExpansion{T}, func::Function, bounds
 ) where {T<:AbstractFloat}
 
@@ -96,7 +96,7 @@ end
 
 
 @doc raw"""
-    update_expansion_order!(
+    update_kpmexpansion_order!(
         kpm_expansion::KPMExpansion, func::Function, M::Int, N::Int = 2*M
     )
 
@@ -104,7 +104,7 @@ In-place update the expansion order `M` for an instance of [`KPMExpansion`](@ref
 recomputing the expansion coefficients. It is also possible to udpate the number of
 point `N` the function `func` is evaluated at to calculate the expansion coefficients.
 """
-function update_expansion_order!(
+function update_kpmexpansion_order!(
     kpm_expansion::KPMExpansion, func::Function, M::Int, N::Int = 2*M
 )
 

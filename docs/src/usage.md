@@ -140,7 +140,7 @@ bounds = (-2.5t, 2.5t)
 M = 100
 
 # Update KPM approximation.
-update_expansion!(kpm_expansion, x -> fermi(x, μ, β), bounds, M)
+update_kpmexpansion!(kpm_expansion, x -> fermi(x, μ, β), bounds, M)
 
 # Calculate KPM density matrix approximation.
 kpm_eval!(ρ_kpm, H, kpm_expansion, T1, T2, T3)
