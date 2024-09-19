@@ -23,10 +23,10 @@ end
         r2rplan::FFTW.r2rFFTWPlan = FFTW.plan_r2r!(zeros(T, 2*length(coefs)), FFTW.REDFT10)
     ) where {T<:AbstractFloat}
 
-Calculate and record the Chebyshev expansion coefficients to order `M` in the vector `ceofs`
-for the function `func` on the bounded interval `(bounds[1], bounds[2])`. Let `N` be the number of evenly
-spaced points on the specified interval for which `func` is evaluated when performing Chebyshev-Gauss
-quadrature to compute the coefficients.
+Calculate and record the Chebyshev polynomial expansion coefficients to order `M` in the vector `ceofs`
+for the function `func` on the interval `(bounds[1], bounds[2])`. Let `length(buf)` be the number of evenly
+spaced points on the interval for which `func` is evaluated when performing Chebyshev-Gauss
+quadrature to compute the Chebyshev polynomial expansion coefficients.
 """
 function kpm_coefs!(
     coefs::AbstractVector{T}, func::Function, bounds,
@@ -52,7 +52,15 @@ function kpm_coefs!(
     return nothing
 end
 
+@doc raw"""
+    kpm_mul(
+        A, coefs::AbstractVector, bounds, v::T,
+        α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+    ) where {T<:AbstractVecOrMat}
 
+Evaluate and return the vector ``v^\prime = F(A) \cdot v`` where ``F(A)`` is represented by the Chebyshev expansion.
+For more information refer to [`kpm_mul!`](@ref).
+"""
 function kpm_mul(
     A, coefs::AbstractVector, bounds, v::T,
     α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
@@ -67,6 +75,20 @@ function kpm_mul(
     return v′
 end
 
+@doc raw"""
+    kpm_mul!(
+        v′::T, A, coefs::AbstractVector, bounds, v::T,
+        α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
+    ) where {T<:AbstractVecOrMat}
+
+Evaluates ``v^\prime = F(A) \cdot v``, writing the result to `v′`, where ``F(A)`` is represented by the Chebyshev expansion.
+Here `A` is either a function that can be called as `A(u,v)` to evaluate
+``u = A\cdot v``, modifying `u` in-place, or is a type for which the operation `mul!(u, A, v)` is defined.
+The vector `coefs` contains Chebyshev expansion coefficients to approximate ``F(A)``, where the eigenspectrum
+of ``A`` is contained in the interval `(bounds[1], bounds[2])` specified by the `bounds` argument.
+The vector `v` is vector getting multiplied by the Chebyshev expansion for ``F(A)``.
+Lastly, the vectors `(α₁, α₂, α₃)` are passed to avoid dynamic memory allocations.
+"""
 function kpm_mul!(
     v′::T, A, coefs::AbstractVector, bounds, v::T,
     α₁::T = similar(v), α₂::T = similar(v), α₃::T = similar(v)
@@ -103,22 +125,28 @@ function kpm_mul!(
     return nothing
 end
 
+@doc raw"""
+    kpm_eval(x::AbstractFloat, coefs, bounds)
 
-function kpm_eval(A::AbstractFloat, coefs, bounds)
+Evaluate ``F(x)`` where ``x`` is real number in the interval `bounds[1] < x < bound[2]`,
+and the function ``F(\bullet)`` is represented by a Chebyshev expansion with coefficients given
+by the vector `coefs`.
+"""
+function kpm_eval(x::AbstractFloat, coefs, bounds)
 
     # calulate rescaling coefficients
     a, b = _rescaling_coefficients(bounds)
-    # calclate A′, a rescaling of A
-    A′ = a * A + b
-    # T₁, T₂ = 1, A′
-    T₁, T₂ = one(A′), A′
+    # calclate x′, a rescaling of x
+    x′ = a * x + b
+    # T₁, T₂ = 1, x′
+    T₁, T₂ = one(x′), x′
     # F = c₁⋅T₁ + c₂⋅T₂
     F = coefs[1]*T₁ + coefs[2]*T₂
     # rename Tₙ₋₁, Tₙ₋₂ = T₂, T₁
     Tₙ₋₁, Tₙ₋₂ = T₂, T₁
     for cₙ in @view coefs[3:end]
-        # Tₙ = 2⋅A′⋅Tₙ₋₁ - Tₙ₋₂
-        Tₙ = 2*A′*Tₙ₋₁ - Tₙ₋₂
+        # Tₙ = 2⋅x′⋅Tₙ₋₁ - Tₙ₋₂
+        Tₙ = 2*x′*Tₙ₋₁ - Tₙ₋₂
         # F = cₙ⋅Tₙ + F
         F = cₙ * Tₙ + F
         # rename Tₙ₋₁, Tₙ₋₂ = Tₙ, Tₙ₋₁
@@ -128,6 +156,13 @@ function kpm_eval(A::AbstractFloat, coefs, bounds)
     return F
 end
 
+@doc raw"""
+    kpm_eval(A::AbstractMatrix, coefs, bounds)
+
+Evaluate and return the matrix ``F(A),`` where ``A`` is an operator with strictly real eigenvalues that
+fall in the interval `(bounds[1], bounds[2])` specified by the `bounds` argument, and the function
+``F(\bullet)`` is represented by a Chebyshev expansion with coefficients given by the vector `coefs`.
+"""
 function kpm_eval(A::AbstractMatrix, coefs, bounds)
 
     F = similar(A)
@@ -138,9 +173,19 @@ function kpm_eval(A::AbstractMatrix, coefs, bounds)
     return F
 end
 
+@doc raw"""
+    kpm_eval!(
+        F::T, A, coefs::AbstractVector, bounds,
+        T₁::T = similar(F), T₂::T = similar(F), T₃::T = similar(F)
+    ) where {T<:AbstractMatrix}
+
+Evaluate and write the matrix ``F(A)`` to `F`, where ``A`` is an operator with strictly real eigenvalues that
+fall in the interval `(bounds[1], bounds[2])` specified by the `bounds` argument, and the function
+``F(\bullet)`` is represented by a Chebyshev expansion with coefficients given by the vector `coefs`.
+Lastly, the matrices `(T₁, T₂, T₃)` are used to avoid dynamic memory allocations.
+"""
 function kpm_eval!(
-    F::T, A,
-    coefs::AbstractVector, bounds,
+    F::T, A, coefs::AbstractVector, bounds,
     T₁::T = similar(F), T₂::T = similar(F), T₃::T = similar(F)
 ) where {T<:AbstractMatrix}
 
@@ -172,27 +217,6 @@ function kpm_eval!(
 
     return nothing
 end
-
-
-function apply_jackson_kernel!(coefs)
-
-    Mp = lastindex(coefs) + 2
-    for i in eachindex(coefs)
-        m = i-1
-        coefs[i] *= (1/Mp)*((Mp-m)cos(m*π/Mp) + sin(m*π/Mp)/tan(π/Mp))
-    end
-
-    return nothing
-end
-
-function apply_jackson_kernel(coefs)
-
-    jackson_coefs = copy(coefs)
-    apply_jackson_kernel!(jackson_coefs)
-
-    return jackson_coefs
-end
-
 
 # calculate rescaling coefficient for given bounds
 function _rescaling_coefficients(bounds)

@@ -36,13 +36,36 @@
     func(x) = fermi(x, β)
 
     # bound expansion spectrum
-    bounds = (-2.5t-μ, 2.5t-μ)
+    bounds = (-3.0t-μ, 3.0t-μ)
 
     # define order of expansion
-    M = 100
+    M = 10
 
     # define kpm expansion
     kpm_expansion = KPMExpansion(func, bounds, M)
+
+    # evaluate expansion as scalar expansion
+    fϵ_scalar = [kpm_eval(ϵk, kpm_expansion) for ϵk in ϵ]
+
+    # evaluate expansion as matrix expansion
+    Fϵ_matrix = kpm_eval(E, kpm_expansion)
+    fϵ_matrix = diag(Fϵ_matrix)
+
+    # evaluate expansion as matrix expansion times vector
+    v = ones(N)
+    fϵ_vector = kpm_mul(E, kpm_expansion, v)
+
+    # test that all three forms of the expansion agree with the analytic solution
+    @test fϵ_scalar ≈ fϵ_matrix ≈ fϵ_vector
+
+    # new expansion order
+    M = 100
+
+    # new bounds
+    bounds = (-2.5t-μ, 2.5t-μ)
+
+    # update expansion
+    update_expansion!(kpm_expansion, func, bounds, M)
 
     # evaluate expansion as scalar expansion
     fϵ_scalar = [kpm_eval(ϵk, kpm_expansion) for ϵk in ϵ]
