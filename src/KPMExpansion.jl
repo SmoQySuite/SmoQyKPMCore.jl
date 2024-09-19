@@ -211,8 +211,6 @@ end
 @doc raw"""
     apply_jackson_kernel!(kpm_expansion::KPMExpansion)
 
-    apply_jackson_kernel!(coefs)
-
 Modify the Chebyshev expansion coefficients by applying the Jackson kernel to them.
 """
 function apply_jackson_kernel!(kpm_expansion::KPMExpansion)
@@ -222,28 +220,4 @@ function apply_jackson_kernel!(kpm_expansion::KPMExpansion)
     apply_jackson_kernel!(coefs)
 
     return nothing
-end
-
-function apply_jackson_kernel!(coefs)
-
-    Mp = lastindex(coefs) + 2
-    for i in eachindex(coefs)
-        m = i-1
-        coefs[i] *= (1/Mp)*((Mp-m)cos(m*π/Mp) + sin(m*π/Mp)/tan(π/Mp))
-    end
-
-    return nothing
-end
-
-@doc raw"""
-    apply_jackson_kernel(coefs)
-
-Return the Chebyshev expansion coefficients transformed by the Jackson kernel.
-"""
-function apply_jackson_kernel(coefs)
-
-    jackson_coefs = copy(coefs)
-    apply_jackson_kernel!(jackson_coefs)
-
-    return jackson_coefs
 end
