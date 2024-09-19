@@ -1,6 +1,7 @@
 module SmoQyKPMCore
 
 using LinearAlgebra
+using Random
 using FFTW
 
 # functional api implementation of KPM algorithm
@@ -13,6 +14,9 @@ export apply_jackson_kernel, apply_jackson_kernel!
 include("KPMExpansion.jl")
 export KPMExpansion
 export update_kpmexpansion!, update_kpmexpansion_bounds!, update_kpmexpansion_order!
+
+include("lanczos.jl")
+export lanczos, lanczos!
 
 # ensure FFTW uses only a single thread
 function __init__()

@@ -14,8 +14,10 @@ level one that does not.
 - [`kpm_mul!`](@ref)
 - [`kpm_eval`](@ref)
 - [`kpm_eval!`](@ref)
-- [`apply_jackson_kernel!`](@ref)
 - [`apply_jackson_kernel`](@ref)
+- [`apply_jackson_kernel!`](@ref)
+- [`lanczos`](@ref)
+- [`lanczos!`](@ref)
 
 ```@docs
 KPMExpansion
@@ -29,6 +31,8 @@ kpm_mul
 kpm_mul!
 kpm_eval
 kpm_eval!
-apply_jackson_kernel!
 apply_jackson_kernel
+apply_jackson_kernel!
+lanczos
+lanczos!
 ```
