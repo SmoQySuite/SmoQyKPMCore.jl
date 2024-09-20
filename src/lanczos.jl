@@ -44,12 +44,14 @@ and [`eigmax`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlge
 # 3. M. Grüning, A. Marini, X. Gonze, Comput. Mater. Sci. 50, 2148-2156 (2011),
 # https://doi.org/10.1016/j.commatsci.2011.02.021.
 """
-function lanczos(niters, v, A, S = I, rng = Random.default_rng())
+function lanczos(niters, v, A, S = I; rng = Random.default_rng())
 
-    αs = zeros( real(eltype(v)) , niters)
-    βs = zeros( real(eltype(v)) , niters-1)
-    tmp = zeros(size(v)..., 5)
-    symtridiag = lanczos!(αs, βs, v, A, S, tmp, rng)
+    αs = zeros(real(eltype(v)), niters, size(v)[2:end]...)
+    βs = zeros(real(eltype(v)), niters-1, size(v)[2:end]...)
+    # println(typeof(αs), ", ", size(αs))
+    # println(typeof(βs), ", ", size(βs))
+
+    symtridiag = lanczos!(αs, βs, v, A, S; rng = rng)
 
     return symtridiag
 end
@@ -58,7 +60,14 @@ end
     lanczos!(
         αs::AbstractVector, βs::AbstractVector, v::AbstractVector,
         A, S = I,
-        tmp::AbstractMatrix = zeros(length(v), 5),
+        tmp::AbstractMatrix = zeros(eltype(v), length(v), 5);
+        rng = Random.default_rng()
+    )
+
+    lanczos!(
+        αs::AbstractMatrix, βs::AbstractMatrix, v::AbstractMatrix,
+        A, S = I,
+        tmp::AbstractArray = zeros(eltype(v), size(v)..., 5);
         rng = Random.default_rng()
     )
 
@@ -77,6 +86,10 @@ and [`eigmax`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlge
 [specialized implementations](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#Elementary-operations) for a
 [`SymTridiagonal`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.SymTridiagonal) matrix type.
 
+Note that if `αs`, `βs` and `v` are all matrices, then each column of `v` is treated as a seperate vector, and a
+vector of [`SymTridiagonal`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.SymTridiagonal)
+of length `size(v,2)` will be returned.
+
 # Similar generalizations of Lanczos have been considered in [2] and [3].
 #
 # 1. C. C. Paige, IMA J. Appl. Math., 373-381 (1972),
@@ -89,7 +102,7 @@ and [`eigmax`](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlge
 function lanczos!(
     αs::AbstractVector, βs::AbstractVector, v::AbstractVector,
     A, S = I,
-    tmp::AbstractMatrix = zeros(length(v), 5),
+    tmp::AbstractMatrix = zeros(eltype(v), length(v), 5);
     rng = Random.default_rng()
 )
 
@@ -129,3 +142,53 @@ function lanczos!(
 
     return SymTridiagonal(αs, βs)
 end
+
+function lanczos!(
+    αs::AbstractMatrix, βs::AbstractMatrix, v::AbstractMatrix,
+    A, S = I,
+    tmp::AbstractArray = zeros(eltype(v), size(v)..., 5);
+    rng = Random.default_rng()
+)
+
+    (vp, Sv, Svp, w, Sw) = eachslice(tmp, dims = 3)
+
+    niters = size(αs,1)
+    @assert niters - 1 == size(βs,1)
+    @assert size(αs,2) == size(βs,2) == size(v,2)
+    
+    if all(iszero, v)
+        randn!(rng, v)
+    end
+
+    _matrix_multiply!(Sv, S, v)
+    β0 = @view βs[1,:]
+    _vdot!(β0, v, Sv)
+    @. β0 = sqrt(β0)
+    @. v /= β0'
+    @. Sv /= β0'
+
+    _matrix_multiply!(w, A, Sv)
+    α1 = @view αs[1,:]
+    _vdot!(α1, w, Sv)
+    @. w = w - α1' * v
+    _matrix_multiply!(Sw, S, w)
+
+    for n in 2:niters
+        βnm1 = @view βs[n-1,:]
+        _vdot!(βnm1, Sw, w)
+        @. βnm1 = sqrt(βnm1)
+        any(iszero, βnm1) && break
+        @. vp = w / βnm1'
+        @. Svp = Sw / βnm1'
+        _matrix_multiply!(w, A, Svp)
+        αn = @view αs[n,:]
+        _vdot!(αn, w, Svp)
+        @. w = w - αn' * vp - βnm1' * v
+        _matrix_multiply!(Sw, S, w)
+        @. v = vp
+    end
+
+    return [SymTridiagonal(view(αs,:,n), view(βs,:,n)) for n in axes(v,2)]
+end
+
+_vdot!(uv, u, v) = map!(dot, uv, eachcol(u), eachcol(v))
