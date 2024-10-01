@@ -99,20 +99,16 @@ function kpm_mul!(
     copyto!(α₁, v)
     # v′ = c₁⋅α₁
     @. v′ = coefs[1] * α₁
-    # α₂ = A⋅α₁
-    _matrix_multiply!(α₂, A, α₁)
     # α₂ = A′⋅α₁ where A′ is scaled A
-    axpby!(b, α₁, a, α₂)
+    _scaled_matrix_multiply!(α₂, A, α₁, a, b)
     # v′ = c₂⋅α₂ + v′
     axpy!(coefs[2], α₂, v′)
     # αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
     αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
     # iterate over remaining terms in sum
     for cₙ in @view coefs[3:end]
-        # αₙ = A⋅αₙ₋₁
-        _matrix_multiply!(αₙ, A, αₙ₋₁)
         # αₙ = A′⋅αₙ₋₁ where A′ is scaled A
-        axpby!(b, αₙ₋₁, a, αₙ)
+        _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
         # αₙ = 2⋅A′⋅αₙ₋₁ - αₙ₋₂
         axpby!(-1, αₙ₋₂, 2, αₙ)
         # v′ = cₙ⋅αₙ + v′
@@ -195,20 +191,16 @@ function kpm_eval!(
     a, b = _rescaling_coefficients(bounds)
     # T₁ = I
     copyto!(T₁, I)
-    # T₂ = A
-    _matrix_multiply!(T₂, A, T₁)
     # T₂ = A′ where A′ is rescaled A
-    axpby!(b, T₁, a, T₂)
+    _scaled_matrix_multiply!(T₂, A, T₁, a, b)
     # F = c₁⋅T₁ + c₂⋅T₂
     @. F = coefs[1]*T₁ + coefs[2]*T₂
     # rename Tₙ, Tₙ₋₁, Tₙ₋₂ = T₃, T₂, T₁
     Tₙ, Tₙ₋₁, Tₙ₋₂ = T₃, T₂, T₁
     # iterate over remaining terms in sum
     for cₙ in @view coefs[3:end]
-        # Tₙ = A⋅Tₙ₋₁
-        _matrix_multiply!(Tₙ, A, Tₙ₋₁)
         # Tₙ = A′⋅Tₙ₋₁ where A′ is scaled A
-        axpby!(b, Tₙ₋₁, a, Tₙ)
+        _scaled_matrix_multiply!(Tₙ, A, Tₙ₋₁, a, b)
         # Tₙ = 2⋅A′⋅Tₙ₋₁ - Tₙ₋₂
         axpby!(-1, Tₙ₋₂, 2, Tₙ)
         # F = cₙ⋅Tₙ + F
@@ -250,12 +242,22 @@ function apply_jackson_kernel(coefs)
 end
 
 # calculate rescaling coefficient for given bounds
-function _rescaling_coefficients(bounds)
+_rescaling_coefficients(bounds) = _rescaling_coefficients(bounds[1], bounds[2]) 
 
-    λ_min, λ_max = bounds
+function _rescaling_coefficients(λ_min, λ_max)
+
     λ_diff = λ_max - λ_min
     λ_sum  = λ_max + λ_min
     return 2/λ_diff, -λ_sum/λ_diff
+end
+
+# evaluate y = A′⋅x, modifying y in-place where A′ is the scaled version of A
+function _scaled_matrix_multiply!(y, A, x, a, b)
+
+    _matrix_multiply!(y, A, x)
+    axpby!(b, x, a, y)
+
+    return nothing
 end
 
 # evaluate y = A⋅x, modifying y in-place
