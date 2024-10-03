@@ -200,7 +200,7 @@ N = 100
 R = randn(L, N)
 
 ## Calculate the moments.
-μ = kpm_moments(M, H, bounds, R);
+μ_kpm = kpm_moments(M, H, bounds, R);
 
 # Having calculate the moments, let us next evaluate the density of states ``\mathcal{N}(\epsilon)`` at ``P`` points
 # with the [`kpm_density`](@ref) function.
@@ -209,14 +209,14 @@ R = randn(L, N)
 P = 1000
 
 ## Evaluate density of states.
-dos, ϵ = kpm_density(P, μ, bounds);
+dos, ϵ = kpm_density(P, μ_kpm, bounds);
 
 # Without regularization, the approximate for the density of states generated above will have clearly visible Gibbs oscillations.
 # To partially suppress these artifacts, we apply the Jackson kernel to the moments ``\mu`` using
 # the [`apply_jackson_kernel`](@ref) function.
 
 ## Apply Jackson kernel.
-μ_jackson = apply_jackson_kernel(μ)
+μ_jackson = apply_jackson_kernel(μ_kpm)
 
 ## Evaluate density of states.
 dos_jackson, ϵ_jackson = kpm_density(P, μ_jackson, bounds);
