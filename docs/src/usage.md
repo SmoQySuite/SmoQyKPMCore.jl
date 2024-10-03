@@ -191,7 +191,7 @@ trρ_approx = kpm_dot(H, kpm_expansion, R, Rtmp)
 println("Approximate trace = ", trρ_approx)
 
 # Report the error in the approximation.
-println("Trace esitimate error = ", abs(trρ_approx - trρ)/trρ)
+println("Trace estimate error = ", abs(trρ_approx - trρ)/trρ)
 ````
 
 ## Density of States Approximation
