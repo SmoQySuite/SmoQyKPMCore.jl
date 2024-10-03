@@ -131,7 +131,7 @@ S & = \langle R | F(A) | R \rangle \\
 S & = \sum_{m=1}^M \langle R | c_m T_m(A^\prime) | R \rangle
 \end{align*},
 ```
-wher ``A^\prime`` is the scaled version of ``A``.
+where ``A^\prime`` is the scaled version of ``A`` using the `bounds`.
 If ``R`` is a matrix, then calculate
 ```math
 \begin{align*}
@@ -166,7 +166,7 @@ S & = \langle U | F(A) | V \rangle \\
   & = \sum_{m=1}^M \langle U | c_m T_m(A^\prime) | V \rangle
 \end{align*},
 ```
-wher ``A^\prime`` is the scaled version of ``A``.
+where ``A^\prime`` is the scaled version of ``A`` using the `bounds`.
 If ``U`` and ``V`` are matrices, then calculate
 ```math
 \begin{align*}

@@ -59,13 +59,14 @@ end
         tmp = zeros(eltype(R), size(R)..., 3)
     ) where {T<:AbstractVecOrMat}
 
-Calculate and return the first ``M`` moments
+If ``R`` is a vector, calculate and return the first ``M`` moments as
 ```math
-\mu_m = \langle R | T_m(A) | R \rangle
+\mu_m = \langle R | T_m(A^\prime) | R \rangle
 ```
-if ``R`` is a vector, and if ``R`` is a matrix then
+where ``A^\prime`` is the rescaled version of ``A`` using the `bounds`.
+If ``R`` is a matrix then calculate the moments as
 ```math
-\mu_m = \frac{1}{N} \sum_{n=1}^N \langle R_n | T_m(A) | R_n \rangle,
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle R_n | T_m(A^\prime) | R_n \rangle,
 ```
 where ``| R_n \rangle`` is the n'th column of ``R``.
 """
@@ -86,13 +87,14 @@ end
         tmp = zeros(eltype(V), size(V)..., 3)
     ) where {T<:AbstractVecOrMat}
 
-Calculate and return the first ``M`` moments
+If ``U`` and ``V`` are vector then calculate and return the first ``M`` moments
 ```math
-\mu_m = \langle U | T_m(A) | V \rangle
+\mu_m = \langle U | T_m(A^\prime) | V \rangle,
 ```
-if ``U`` and ``V`` are vector, and if they are matrices then
+where ``A^\prime`` is the rescaled version of ``A`` using the `bounds`.
+If ``U`` and ``V`` are matrices then calculate the moments as
 ```math
-\mu_m = \frac{1}{N} \sum_{n=1}^N \langle U_n | T_m(A) | V_n \rangle,
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle U_n | T_m(A^\prime) | V_n \rangle,
 ```
 where ``| U_n \rangle`` and  ``| V_n \rangle`` are are the n'th columns of each matrix.
 """
@@ -113,13 +115,14 @@ end
         tmp = zeros(eltype(R), size(R)..., 3)
     ) where {T<:AbstractVecOrMat}
 
-Calculate the moments
+If ``R`` is a vector, calculate and return the first ``M`` moments as
 ```math
-\mu_m = \langle R | T_m(A) | R \rangle
+\mu_m = \langle R | T_m(A^\prime) | R \rangle
 ```
-if ``R`` is a vector, and if ``R`` is a matrix then
+where ``A^\prime`` is the rescaled version of ``A`` using the `bounds`.
+If ``R`` is a matrix then calculate the moments as
 ```math
-\mu_m = \frac{1}{N} \sum_{n=1}^N \langle R_n | T_m(A) | R_n \rangle,
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle R_n | T_m(A^\prime) | R_n \rangle,
 ```
 where ``| R_n \rangle`` is the n'th column of ``R``.
 """
@@ -139,13 +142,14 @@ end
         tmp = zeros(eltype(V), size(V)..., 3)
     ) where {T<:AbstractVecOrMat}
 
-Calculate the moments
+If ``U`` and ``V`` are vector then calculate and return the first ``M`` moments
 ```math
-\mu_m = \langle U | T_m(A) | V \rangle
+\mu_m = \langle U | T_m(A^\prime) | V \rangle,
 ```
-if ``U`` and ``V`` are vector, and if they are matrices then
+where ``A^\prime`` is the rescaled version of ``A`` using the `bounds`.
+If ``U`` and ``V`` are matrices then calculate the moments as
 ```math
-\mu_m = \frac{1}{N} \sum_{n=1}^N \langle U_n | T_m(A) | V_n \rangle,
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle U_n | T_m(A^\prime) | V_n \rangle,
 ```
 where ``| U_n \rangle`` and  ``| V_n \rangle`` are are the n'th columns of each matrix.
 """
@@ -273,15 +277,15 @@ end
 If ``R`` is a single vector, then calculate the inner product
 ```math
 \begin{align*}
-S & = \langle R | F(A) | R \rangle \\
+S & = \langle R | F(A^\prime) | R \rangle \\
 S & = \sum_{m=1}^M \langle R | c_m T_m(A^\prime) | R \rangle
 \end{align*},
 ```
-wher ``A^\prime`` is the scaled version of ``A``.
+where ``A^\prime`` is the scaled version of ``A`` using the `bounds`.
 If ``R`` is a matrix, then calculate
 ```math
 \begin{align*}
-S & = \langle R | F(A) | R \rangle \\
+S & = \langle R | F(A^\prime) | R \rangle \\
 S & = \frac{1}{N} \sum_{n=1}^N \sum_{m=1}^M \langle R_n | c_m T_m(A^\prime) | R_n \rangle
 \end{align*},
 ```
@@ -306,15 +310,15 @@ end
 If ``U`` and ``V`` are single vectors, then calculate the inner product
 ```math
 \begin{align*}
-S & = \langle U | F(A) | V \rangle \\
+S & = \langle U | F(A^\prime) | V \rangle \\
   & = \sum_{m=1}^M \langle U | c_m T_m(A^\prime) | V \rangle
 \end{align*},
 ```
-wher ``A^\prime`` is the scaled version of ``A``.
+where ``A^\prime`` is the scaled version of ``A`` using the `bounds`.
 If ``U`` and ``V`` are matrices, then calculate
 ```math
 \begin{align*}
-S & = \langle U | F(A) | V \rangle \\
+S & = \langle U | F(A^\prime) | V \rangle \\
   & = \frac{1}{N} \sum_{n=1}^N \sum_{m=1}^M \langle U_n | c_m T_m(A^\prime) | V_n \rangle
 \end{align*},
 ```
