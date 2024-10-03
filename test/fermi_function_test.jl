@@ -58,6 +58,24 @@
     # test that all three forms of the expansion agree with the analytic solution
     @test fϵ_scalar ≈ fϵ_matrix ≈ fϵ_vector
 
+    # calculate innter product
+    fϵ_inner_prod = kpm_dot(E, kpm_expansion, v, v)
+
+    # test inner product with single vector
+    @test dot(fϵ_vector, v) ≈ fϵ_inner_prod
+
+    # generate multiple random vectors
+    R = randn(N, 10)
+
+    # calculate product with multiple vector
+    fϵ_vectors = kpm_mul(E, kpm_expansion, R)
+
+    # calculate inner product with multiple vectors
+    fϵ_inner_prods = kpm_dot(E, kpm_expansion, R)
+
+    # test results consistent with multiple vectors
+    @test dot(fϵ_vectors, R)/size(R,2) ≈ fϵ_inner_prods
+
     # new expansion order
     M = 100
 

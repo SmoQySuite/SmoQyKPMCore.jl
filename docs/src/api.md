@@ -14,6 +14,7 @@ level one that does not.
 - [`kpm_moments!`](@ref)
 - [`kpm_density`](@ref)
 - [`kpm_density!`](@ref)
+- [`kpm_dot`](@ref)
 - [`kpm_mul`](@ref)
 - [`kpm_mul!`](@ref)
 - [`kpm_eval`](@ref)
@@ -35,6 +36,7 @@ kpm_moments
 kpm_moments!
 kpm_density
 kpm_density!
+kpm_dot
 kpm_mul
 kpm_mul!
 kpm_eval
