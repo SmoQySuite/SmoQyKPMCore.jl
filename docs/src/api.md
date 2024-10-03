@@ -5,11 +5,15 @@ an instance of the [`KPMExpansion`](@ref) type as an argument, and a lower
 level one that does not.
 
 - [`KPMExpansion`](@ref)
-- [`update_kpmexpansion!`](@ref)
-- [`update_kpmexpansion_bounds!`](@ref)
-- [`update_kpmexpansion_order!`](@ref)
+- [`kpm_update!`](@ref)
+- [`kpm_update_bounds!`](@ref)
+- [`kpm_update_order!`](@ref)
 - [`kpm_coefs`](@ref)
 - [`kpm_coefs!`](@ref)
+- [`kpm_moments`](@ref)
+- [`kpm_moments!`](@ref)
+- [`kpm_density`](@ref)
+- [`kpm_density!`](@ref)
 - [`kpm_mul`](@ref)
 - [`kpm_mul!`](@ref)
 - [`kpm_eval`](@ref)
@@ -22,11 +26,15 @@ level one that does not.
 ```@docs
 KPMExpansion
 KPMExpansion(::Function, ::Any, ::Int, ::Int)
-update_kpmexpansion!
-update_kpmexpansion_bounds!
-update_kpmexpansion_order!
+kpm_update!
+kpm_update_bounds!
+kpm_update_order!
 kpm_coefs
 kpm_coefs!
+kpm_moments
+kpm_moments!
+kpm_density
+kpm_density!
 kpm_mul
 kpm_mul!
 kpm_eval
