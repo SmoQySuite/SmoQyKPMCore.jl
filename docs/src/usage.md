@@ -232,7 +232,7 @@ N = 100
 R = randn(L, N)
 
 # Calculate the moments.
-μ = kpm_moments(M, H, bounds, R);
+μ_kpm = kpm_moments(M, H, bounds, R);
 nothing #hide
 ````
 
@@ -244,7 +244,7 @@ with the [`kpm_density`](@ref) function.
 P = 1000
 
 # Evaluate density of states.
-dos, ϵ = kpm_density(P, μ, bounds);
+dos, ϵ = kpm_density(P, μ_kpm, bounds);
 nothing #hide
 ````
 
@@ -254,7 +254,7 @@ the [`apply_jackson_kernel`](@ref) function.
 
 ````@example usage
 # Apply Jackson kernel.
-μ_jackson = apply_jackson_kernel(μ)
+μ_jackson = apply_jackson_kernel(μ_kpm)
 
 # Evaluate density of states.
 dos_jackson, ϵ_jackson = kpm_density(P, μ_jackson, bounds);
