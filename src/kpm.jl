@@ -278,7 +278,7 @@ If ``R`` is a single vector, then calculate the inner product
 ```math
 \begin{align*}
 S & = \langle R | F(A^\prime) | R \rangle \\
-S & = \sum_{m=1}^M \langle R | c_m T_m(A^\prime) | R \rangle
+  & = \sum_{m=1}^M \langle R | c_m T_m(A^\prime) | R \rangle
 \end{align*},
 ```
 where ``A^\prime`` is the scaled version of ``A`` using the `bounds`.
@@ -286,7 +286,7 @@ If ``R`` is a matrix, then calculate
 ```math
 \begin{align*}
 S & = \langle R | F(A^\prime) | R \rangle \\
-S & = \frac{1}{N} \sum_{n=1}^N \sum_{m=1}^M \langle R_n | c_m T_m(A^\prime) | R_n \rangle
+ & = \frac{1}{N} \sum_{n=1}^N \sum_{m=1}^M \langle R_n | c_m T_m(A^\prime) | R_n \rangle
 \end{align*},
 ```
 where ``| R_n \rangle`` is a column of ``R``.
