@@ -89,7 +89,7 @@ vtmp = zeros(L, 3)
 kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
-println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Vector Error = 0.017760792463566544</code></pre><p>Let us now provide the KPM approximation with better bounds on the eigenspectrum and also increase the order the of the expansion and see how the result improves. We will use the <a href="../api/#SmoQyKPMCore.kpm_update!"><code>kpm_update!</code></a> function to update the <a href="../api/#SmoQyKPMCore.KPMExpansion"><code>KPMExpansion</code></a> in-place.</p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
+println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Vector Error = 0.011133592193118184</code></pre><p>Let us now provide the KPM approximation with better bounds on the eigenspectrum and also increase the order the of the expansion and see how the result improves. We will use the <a href="../api/#SmoQyKPMCore.kpm_update!"><code>kpm_update!</code></a> function to update the <a href="../api/#SmoQyKPMCore.KPMExpansion"><code>KPMExpansion</code></a> in-place.</p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
 bounds = (-2.5t, 2.5t)
 
 # Define order of Chebyshev expansion used in KPM approximation.
@@ -109,7 +109,7 @@ kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
 println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 1.031960839804449e-14
-Vector Error = 7.248508585426103e-15</code></pre><p>Now let me quickly demonstrate how we may approximate the the trace <span>$\rho$</span> using a set of random vector <span>$R_n$</span> using the <a href="../api/#SmoQyKPMCore.kpm_dot"><code>kpm_dot</code></a> function.</p><pre><code class="language-julia hljs"># Calculate exact trace.
+Vector Error = 9.645800111098575e-15</code></pre><p>Now let me quickly demonstrate how we may approximate the the trace <span>$\rho$</span> using a set of random vector <span>$R_n$</span> using the <a href="../api/#SmoQyKPMCore.kpm_dot"><code>kpm_dot</code></a> function.</p><pre><code class="language-julia hljs"># Calculate exact trace.
 trρ = tr(ρ)
 println(&quot;Exact trace = &quot;, trρ)
 
@@ -128,8 +128,8 @@ println(&quot;Approximate trace = &quot;, trρ_approx)
 
 # Report the error in the approximation.
 println(&quot;Trace esitimate error = &quot;, abs(trρ_approx - trρ)/trρ)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Exact trace = 8.000000000000002
-Approximate trace = 7.756940190545674
-Trace esitimate error = 0.03038247618179101</code></pre><h2 id="Density-of-States-Approximation"><a class="docs-heading-anchor" href="#Density-of-States-Approximation">Density of States Approximation</a><a id="Density-of-States-Approximation-1"></a><a class="docs-heading-anchor-permalink" href="#Density-of-States-Approximation" title="Permalink"></a></h2><p>Next let us demonstrate how we may approximate the density of states <span>$\mathcal{N}(\epsilon)$</span> for a 1D chain tight-binding model. The first step a very larger Hamiltonian matrix <span>$H,$</span> which we represent as a spare matrix.</p><pre><code class="language-julia hljs"># Size of 1D chain considered
+Approximate trace = 7.863982814531792
+Trace esitimate error = 0.017002148183526185</code></pre><h2 id="Density-of-States-Approximation"><a class="docs-heading-anchor" href="#Density-of-States-Approximation">Density of States Approximation</a><a id="Density-of-States-Approximation-1"></a><a class="docs-heading-anchor-permalink" href="#Density-of-States-Approximation" title="Permalink"></a></h2><p>Next let us demonstrate how we may approximate the density of states <span>$\mathcal{N}(\epsilon)$</span> for a 1D chain tight-binding model. The first step a very larger Hamiltonian matrix <span>$H,$</span> which we represent as a spare matrix.</p><pre><code class="language-julia hljs"># Size of 1D chain considered
 L = 10_000
 
 # Construct sparse Hamiltonian matrix.
@@ -173,12 +173,12 @@ N = 100
 R = randn(L, N)
 
 # Calculate the moments.
-μ = kpm_moments(M, H, bounds, R);</code></pre><p>Having calculate the moments, let us next evaluate the density of states <span>$\mathcal{N}(\epsilon)$</span> at <span>$P$</span> points with the <a href="../api/#SmoQyKPMCore.kpm_density"><code>kpm_density</code></a> function.</p><pre><code class="language-julia hljs"># Number of points at which to evaluate the density of states.
+μ_kpm = kpm_moments(M, H, bounds, R);</code></pre><p>Having calculate the moments, let us next evaluate the density of states <span>$\mathcal{N}(\epsilon)$</span> at <span>$P$</span> points with the <a href="../api/#SmoQyKPMCore.kpm_density"><code>kpm_density</code></a> function.</p><pre><code class="language-julia hljs"># Number of points at which to evaluate the density of states.
 P = 1000
 
 # Evaluate density of states.
-dos, ϵ = kpm_density(P, μ, bounds);</code></pre><p>Without regularization, the approximate for the density of states generated above will have clearly visible Gibbs oscillations. To partially suppress these artifacts, we apply the Jackson kernel to the moments <span>$\mu$</span> using the <a href="../api/#SmoQyKPMCore.apply_jackson_kernel"><code>apply_jackson_kernel</code></a> function.</p><pre><code class="language-julia hljs"># Apply Jackson kernel.
-μ_jackson = apply_jackson_kernel(μ)
+dos, ϵ = kpm_density(P, μ_kpm, bounds);</code></pre><p>Without regularization, the approximate for the density of states generated above will have clearly visible Gibbs oscillations. To partially suppress these artifacts, we apply the Jackson kernel to the moments <span>$\mu$</span> using the <a href="../api/#SmoQyKPMCore.apply_jackson_kernel"><code>apply_jackson_kernel</code></a> function.</p><pre><code class="language-julia hljs"># Apply Jackson kernel.
+μ_jackson = apply_jackson_kernel(μ_kpm)
 
 # Evaluate density of states.
 dos_jackson, ϵ_jackson = kpm_density(P, μ_jackson, bounds);</code></pre><p>Have approximated the density of states, let us now plot the result.</p><pre><code class="language-julia hljs">fig = Figure(
@@ -226,4 +226,4 @@ axislegend(
     ax, halign = :center, valign = :top, labelsize = 30
 )
 
-fig</code></pre><img src="9de1da90.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 3 October 2024 17:25">Thursday 3 October 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+fig</code></pre><img src="e4e96c7b.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 3 October 2024 18:52">Thursday 3 October 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
