@@ -65,7 +65,7 @@
     bounds = (-2.5t-μ, 2.5t-μ)
 
     # update expansion
-    update_kpmexpansion!(kpm_expansion, func, bounds, M)
+    kpm_update!(kpm_expansion, func, bounds, M)
 
     # evaluate expansion as scalar expansion
     fϵ_scalar = [kpm_eval(ϵk, kpm_expansion) for ϵk in ϵ]

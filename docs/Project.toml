@@ -1,5 +1,7 @@
 [deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 SmoQyKPMCore = "30e33e58-a96a-4fec-8c75-57692dd3ff18"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
