@@ -3,18 +3,23 @@ using Documenter
 using Literate
 using LinearAlgebra
 
-# Process usage example
-name = "usage"
-usage_source = joinpath(pkgdir(SmoQyKPMCore, "examples"), "$name.jl")
-Literate.markdown(
-    usage_source, joinpath(@__DIR__, "src");
-    credit=false
-)
-
 DocMeta.setdocmeta!(SmoQyKPMCore, :DocTestSetup, :(using SmoQyKPMCore); recursive=true)
 
+# package directory
+pkg_dir = pkgdir(SmoQyKPMCore)
+# examples directory
+examples_dir = joinpath(pkg_dir, "examples")
+# docs directory
+docs_dir = joinpath(pkg_dir, "docs")
+# docs/src directory
+docs_src_dir = joinpath(docs_dir, "src")
+
+# Process usage example
+usage_literate = joinpath(examples_dir, "usage.jl")
+Literate.markdown(usage_literate, docs_src_dir; credit = false)
+
 makedocs(;
-    clean = false,
+    clean = true,
     modules=[SmoQyKPMCore],
     authors="Benjamin Cohen-Stead <benwcs@gmail.com>, Steven Johnston <sjohn145@utk.edu>, Kipton Barros <kbarros@lanl.gov>",
     sitename="SmoQyKPMCore.jl",
