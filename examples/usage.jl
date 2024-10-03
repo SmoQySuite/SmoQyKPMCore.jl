@@ -142,6 +142,29 @@ kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 ## Check how good the approximation is.
 println("Vector Error = ", norm(ρv_kpm - ρv) / norm(ρv) )
 
+# Now let me quickly demonstrate how we may approximate the the trace ``\rho``
+# using a set of random vector ``R_n`` using the [`kpm_dot`](@ref) function.
+
+## Calculate exact trace.
+trρ = tr(ρ)
+println("Exact trace = ", trρ)
+
+## Number of random vectors
+N = 100
+
+## Initialize random vectors.
+R = randn(L, N)
+
+## Initialize array to avoid dynamic memory allocation
+Rtmp = zeros(L, N, 3)
+
+## Approximate trace of density matrix.
+trρ_approx = kpm_dot(H, kpm_expansion, R, Rtmp)
+println("Approximate trace = ", trρ_approx)
+
+## Report the error in the approximation.
+println("Trace esitimate error = ", abs(trρ_approx - trρ)/trρ)
+
 # ## Density of States Approximation
 
 # Next let us demonstrate how we may approximate the density of states ``\mathcal{N}(\epsilon)``

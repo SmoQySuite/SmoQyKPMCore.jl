@@ -55,7 +55,8 @@ end
 
 @doc raw"""
     kpm_moments(
-        M::Int, A, bounds, R::T, tmp = zeros(eltype(R), size(R)..., 3)
+        M::Int, A, bounds, R::T,
+        tmp = zeros(eltype(R), size(R)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 Calculate and return the first ``M`` moments
@@ -69,7 +70,8 @@ if ``R`` is a vector, and if ``R`` is a matrix then
 where ``| R_n \rangle`` is the n'th column of ``R``.
 """
 function kpm_moments(
-    M::Int, A, bounds, R::T, tmp = zeros(eltype(R), size(R)..., 3)
+    M::Int, A, bounds, R::T,
+    tmp = zeros(eltype(R), size(R)..., 3)
 ) where {T<:AbstractVecOrMat}
 
     μ = zeros(eltype(R), M)
@@ -80,7 +82,8 @@ end
 
 @doc raw"""
     kpm_moments(
-        M::Int, A, bounds, U::T, V::T, tmp = zeros(eltype(V), size(V)..., 3)
+        M::Int, A, bounds, U::T, V::T,
+        tmp = zeros(eltype(V), size(V)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 Calculate and return the first ``M`` moments
@@ -94,7 +97,8 @@ if ``U`` and ``V`` are vector, and if they are matrices then
 where ``| U_n \rangle`` and  ``| V_n \rangle`` are are the n'th columns of each matrix.
 """
 function kpm_moments(
-    M::Int, A, bounds, U::T, V::T, tmp = zeros(eltype(V), size(V)..., 3)
+    M::Int, A, bounds, U::T, V::T,
+    tmp = zeros(eltype(V), size(V)..., 3)
 ) where {T<:AbstractVecOrMat}
 
     μ = zeros(eltype(R), M)
@@ -105,7 +109,8 @@ end
 
 @doc raw"""
     kpm_moments!(
-        μ::AbstractVector, A, bounds, R::T, tmp = zeros(eltype(R), size(R)..., 3)
+        μ::AbstractVector, A, bounds, R::T,
+        tmp = zeros(eltype(R), size(R)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 Calculate the moments
@@ -119,7 +124,8 @@ if ``R`` is a vector, and if ``R`` is a matrix then
 where ``| R_n \rangle`` is the n'th column of ``R``.
 """
 function kpm_moments!(
-    μ::AbstractVector, A, bounds, R::T, tmp = zeros(eltype(R), size(R)..., 3)
+    μ::AbstractVector, A, bounds, R::T,
+    tmp = zeros(eltype(R), size(R)..., 3)
 ) where {T<:AbstractVecOrMat}
 
     kpm_moments!(μ, A, bounds, R, R, tmp)
@@ -129,7 +135,8 @@ end
 
 @doc raw"""
     kpm_moments!(
-        μ::AbstractVector, A, bounds, U::T, V::T, tmp = zeros(eltype(V), size(V)..., 3)
+        μ::AbstractVector, A, bounds, U::T, V::T,
+        tmp = zeros(eltype(V), size(V)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 Calculate the moments
@@ -143,7 +150,8 @@ if ``U`` and ``V`` are vector, and if they are matrices then
 where ``| U_n \rangle`` and  ``| V_n \rangle`` are are the n'th columns of each matrix.
 """
 function kpm_moments!(
-    μ::AbstractVector, A, bounds, U::T, V::T, tmp = zeros(eltype(V), size(V)..., 3)
+    μ::AbstractVector, A, bounds, U::T, V::T,
+    tmp = zeros(eltype(V), size(V)..., 3)
 ) where {T<:AbstractVecOrMat}
 
     αₙ = selectdim(tmp, ndims(tmp), 1)
@@ -253,6 +261,96 @@ function kpm_density!(
     @. ϵ *= (W/2)
 
     return nothing
+end
+
+
+@doc raw"""
+    kpm_dot(
+        A, coefs::AbstractVector, bounds, R::T,
+        tmp = zeros(eltype(v), size(v)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+If ``R`` is a single vector, then calculate the inner product
+```math
+\begin{align*}
+S & = \langle R | F(A) | R \rangle \\
+S & = \sum_{m=1}^M \langle R | c_m T_m(A^\prime) | R \rangle
+\end{align*},
+```
+wher ``A^\prime`` is the scaled version of ``A``.
+If ``R`` is a matrix, then calculate
+```math
+\begin{align*}
+S & = \langle R | F(A) | R \rangle \\
+S & = \frac{1}{N} \sum_{n=1}^N \sum_{m=1}^M \langle R_n | c_m T_m(A^\prime) | R_n \rangle
+\end{align*},
+```
+where ``| R_n \rangle`` is a column of ``R``.
+"""
+function kpm_dot(
+    A, coefs::AbstractVector, bounds, R::T,
+    tmp = zeros(eltype(v), size(v)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    S = kpm_dot(A, coefs, bounds, R, R, tmp)
+
+    return S
+end
+
+@doc raw"""
+    kpm_dot(
+        A, coefs::AbstractVector, bounds, U::T, V::T,
+        tmp = zeros(eltype(v), size(v)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+If ``U`` and ``V`` are single vectors, then calculate the inner product
+```math
+\begin{align*}
+S & = \langle U | F(A) | V \rangle \\
+  & = \sum_{m=1}^M \langle U | c_m T_m(A^\prime) | V \rangle
+\end{align*},
+```
+wher ``A^\prime`` is the scaled version of ``A``.
+If ``U`` and ``V`` are matrices, then calculate
+```math
+\begin{align*}
+S & = \langle U | F(A) | V \rangle \\
+  & = \frac{1}{N} \sum_{n=1}^N \sum_{m=1}^M \langle U_n | c_m T_m(A^\prime) | V_n \rangle
+\end{align*},
+```
+where ``| U_n \rangle`` and ``| V_n \rangle`` are the columns of each matrix.
+"""
+function kpm_dot(
+    A, coefs::AbstractVector, bounds, U::T, V::T,
+    tmp = zeros(eltype(v), size(v)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    αₙ = selectdim(tmp, ndims(tmp), 1)
+    αₙ₋₁ = selectdim(tmp, ndims(tmp), 2)
+    αₙ₋₂ = selectdim(tmp, ndims(tmp), 3)
+    λmin, λmax = bounds
+    a, b = _rescaling_coefficients(λmin, λmax)
+    # initialize S = 0
+    S = zero(eltype(V))
+    # αₙ₋₂ = -V
+    @. αₙ₋₂ = -V
+    # αₙ₋₁ = 0
+    fill!(αₙ₋₁, 0)
+    # αₙ = 0
+    fill!(αₙ, 0)
+    # iterate of order of expansion n = 1,...,N
+    for (n,cₙ) in enumerate(coefs)
+        # αₙ′ = (a⋅A + b⋅I)⋅αₙ₋₁
+        _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
+        # αₙ = (2-δₙ₋₂)⋅αₙ′ - αₙ₋₂
+        axpby!(-1, αₙ₋₂, 2 - isone(n-1), αₙ)
+        # S = S + cₙ⋅⟨U|αₙ⟩
+        S += cₙ * dot(U, αₙ) / size(U, 2)
+        # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
+        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
+    end
+
+    return S
 end
 
 
