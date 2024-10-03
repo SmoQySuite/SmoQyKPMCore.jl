@@ -103,7 +103,7 @@ function kpm_moments(
     tmp = zeros(eltype(V), size(V)..., 3)
 ) where {T<:AbstractVecOrMat}
 
-    μ = zeros(eltype(R), M)
+    μ = zeros(eltype(U), M)
     kpm_moments!(μ, A, bounds, U, V, tmp)
 
     return μ
@@ -131,7 +131,50 @@ function kpm_moments!(
     tmp = zeros(eltype(R), size(R)..., 3)
 ) where {T<:AbstractVecOrMat}
 
-    kpm_moments!(μ, A, bounds, R, R, tmp)
+    @assert iseven(length(μ))
+    α₁ = selectdim(tmp, ndims(tmp), 1)
+    α₂ = selectdim(tmp, ndims(tmp), 2)
+    α₃ = selectdim(tmp, ndims(tmp), 3)
+    # order of expansion
+    N = length(μ)
+    # calulate rescaling coefficients
+    a, b = _rescaling_coefficients(bounds)
+    # α₁ = v
+    copyto!(α₁, R)
+    # α₂ = A′⋅α₁ where A′ is scaled A
+    _scaled_matrix_multiply!(α₂, A, α₁, a, b)
+    # μ₁ = tr[Rᵀ⋅R]
+    μ[1] = dot(R,R) / size(R,2)
+    μ₁ = μ[1]
+    # μ₂ = tr[Rᵀ⋅α₂]
+    μ[2] = dot(R, α₂) / size(R,2)
+    μ₂ = μ[2]
+    # αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
+    αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
+    # αₙ = A′⋅αₙ₋₁ where A′ is scaled A
+    _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
+    # αₙ = 2⋅A′⋅αₙ₋₁ - αₙ₋₂
+    axpby!(-1, αₙ₋₂, 2, αₙ)
+    # iterate over remaining terms in sum
+    for n in 3:(N÷2)
+        # μₙ = ⟨R|αₙ⟩
+        μ[n] = dot(R, αₙ) / size(R, 2)
+        # μ₂ₙ₋₁ = 2⋅⟨αₙ₋₁|αₙ₋₁⟩ - μ₁
+        if (2*n-1) > N÷2
+            μ[2*n-1] = 2 * dot(αₙ, αₙ) / size(R, 2) - μ₁
+        end
+        # αₙ₊₁ = A′⋅αₙ where A′ is scaled A
+        αₙ₊₁ = αₙ₋₂
+        _scaled_matrix_multiply!(αₙ₊₁, A, αₙ, a, b)
+        # αₙ₊₁ = 2⋅A′⋅αₙ - αₙ₋₁
+        axpby!(-1, αₙ₋₁, 2, αₙ₊₁)
+        # μ₂ₙ = 2 * ⟨αₙ|αₙ₋₁⟩ - μ₁
+        if (2*n) > N÷2
+            μ[2*n] = 2 * dot(αₙ₊₁, αₙ) / size(R, 2) - μ₂
+        end
+        # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
+        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₊₁, αₙ, αₙ₋₁
+    end
 
     return nothing
 end
@@ -271,7 +314,7 @@ end
 @doc raw"""
     kpm_dot(
         A, coefs::AbstractVector, bounds, R::T,
-        tmp = zeros(eltype(v), size(v)..., 3)
+        tmp = zeros(eltype(R), size(R)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 If ``R`` is a single vector, then calculate the inner product
@@ -293,10 +336,57 @@ where ``| R_n \rangle`` is a column of ``R``.
 """
 function kpm_dot(
     A, coefs::AbstractVector, bounds, R::T,
-    tmp = zeros(eltype(v), size(v)..., 3)
+    tmp = zeros(eltype(R), size(R)..., 3)
 ) where {T<:AbstractVecOrMat}
 
-    S = kpm_dot(A, coefs, bounds, R, R, tmp)
+    @assert iseven(length(coefs))
+    α₁ = selectdim(tmp, ndims(tmp), 1)
+    α₂ = selectdim(tmp, ndims(tmp), 2)
+    α₃ = selectdim(tmp, ndims(tmp), 3)
+    # initialize S = 0
+    S = zero(eltype(R))
+    # order of expansion
+    N = length(coefs)
+    # calulate rescaling coefficients
+    a, b = _rescaling_coefficients(bounds)
+    # α₁ = v
+    copyto!(α₁, R)
+    # α₂ = A′⋅α₁ where A′ is scaled A
+    _scaled_matrix_multiply!(α₂, A, α₁, a, b)
+    # μ₁ = tr[Rᵀ⋅R]
+    μ₁ = dot(R,R) / size(R,2)
+    # S = S + c₁⋅μ₁
+    S += coefs[1] * μ₁
+    # μ₂ = tr[Rᵀ⋅α₂]
+    μ₂ = dot(R, α₂) / size(R,2)
+    # S = S + c₂⋅μ₂
+    S += coefs[2] * μ₂
+    # αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
+    αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
+    # αₙ = A′⋅αₙ₋₁ where A′ is scaled A
+    _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
+    # αₙ = 2⋅A′⋅αₙ₋₁ - αₙ₋₂
+    axpby!(-1, αₙ₋₂, 2, αₙ)
+    # iterate over remaining terms in sum
+    for n in 3:(N÷2)
+        # S = S + cₙ⋅⟨R|αₙ⟩
+        S += coefs[n] * dot(R, αₙ) / size(R, 2)
+        # S = S + c₂ₙ₋₁⋅(2⋅⟨αₙ₋₁|αₙ₋₁⟩ - μ₁)
+        if (2*n-1) > N÷2
+            S += coefs[2*n-1] * (2 * dot(αₙ, αₙ) / size(R, 2) - μ₁)
+        end
+        # αₙ₊₁ = A′⋅αₙ where A′ is scaled A
+        αₙ₊₁ = αₙ₋₂
+        _scaled_matrix_multiply!(αₙ₊₁, A, αₙ, a, b)
+        # αₙ₊₁ = 2⋅A′⋅αₙ - αₙ₋₁
+        axpby!(-1, αₙ₋₁, 2, αₙ₊₁)
+        # S = c₂ₙ⋅(2 * ⟨αₙ|αₙ₋₁⟩ - μ₁)
+        if (2*n) > N÷2
+            S += coefs[2*n] * (2 * dot(αₙ₊₁, αₙ) / size(R, 2) - μ₂)
+        end
+        # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
+        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₊₁, αₙ, αₙ₋₁
+    end
 
     return S
 end
@@ -304,7 +394,7 @@ end
 @doc raw"""
     kpm_dot(
         A, coefs::AbstractVector, bounds, U::T, V::T,
-        tmp = zeros(eltype(v), size(v)..., 3)
+        tmp = zeros(eltype(V), size(V)..., 3)
     ) where {T<:AbstractVecOrMat}
 
 If ``U`` and ``V`` are single vectors, then calculate the inner product
@@ -326,7 +416,7 @@ where ``| U_n \rangle`` and ``| V_n \rangle`` are the columns of each matrix.
 """
 function kpm_dot(
     A, coefs::AbstractVector, bounds, U::T, V::T,
-    tmp = zeros(eltype(v), size(v)..., 3)
+    tmp = zeros(eltype(V), size(V)..., 3)
 ) where {T<:AbstractVecOrMat}
 
     αₙ = selectdim(tmp, ndims(tmp), 1)

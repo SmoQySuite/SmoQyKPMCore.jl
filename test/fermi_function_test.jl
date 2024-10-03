@@ -70,11 +70,14 @@
     # calculate product with multiple vector
     fϵ_vectors = kpm_mul(E, kpm_expansion, R)
 
-    # calculate inner product with multiple vectors
-    fϵ_inner_prods = kpm_dot(E, kpm_expansion, R)
-
     # test results consistent with multiple vectors
-    @test dot(fϵ_vectors, R)/size(R,2) ≈ fϵ_inner_prods
+    @test dot(fϵ_vectors, R)/size(R,2) ≈ kpm_dot(E, kpm_expansion, R)
+    @test dot(fϵ_vectors, R)/size(R,2) ≈ kpm_dot(E, kpm_expansion, R, R)
+
+    # test that two way of calculating moments are consistent
+    μ1 = kpm_moments(M, E, bounds, R, R)
+    μ2 = kpm_moments(M, E, bounds, R)
+    @test μ1 ≈ μ2
 
     # new expansion order
     M = 100

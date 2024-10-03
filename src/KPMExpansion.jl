@@ -148,7 +148,7 @@ function kpm_dot(
 
     (; M, bounds, buf) = kpm_expansion
     coefs = @view buf[1:M]
-    S = kpm_dot(A, coefs, bounds, R, R, tmp)
+    S = kpm_dot(A, coefs, bounds, R, tmp)
 
     return S
 end
