@@ -221,7 +221,7 @@ dos, ϵ = kpm_density(P, μ_kpm, bounds);
 ## Evaluate density of states.
 dos_jackson, ϵ_jackson = kpm_density(P, μ_jackson, bounds);
 
-# Have approximated the density of states, let us now plot the result.
+# Having approximated the density of states, let us now plot it.
 
 fig = Figure(
     size = (700, 400),

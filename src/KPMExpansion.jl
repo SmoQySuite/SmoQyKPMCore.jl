@@ -119,6 +119,140 @@ end
 
 
 @doc raw"""
+    kpm_moments(
+        A, kpm_expansion::KPMExpansion,, R::T,
+        tmp = zeros(eltype(R), size(R)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+If ``R`` is a vector, calculate and return the first ``kpm_expansion.M`` moments as
+```math
+\mu_m = \langle R | T_m(A^\prime) | R \rangle
+```
+where ``A^\prime`` is the rescaled version of ``A`` using the `kpm_expansion.bounds`.
+If ``R`` is a matrix then calculate the moments as
+```math
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle R_n | T_m(A^\prime) | R_n \rangle,
+```
+where ``| R_n \rangle`` is the n'th column of ``R``.
+"""
+function kpm_moments(
+    A, kpm_expansion::KPMExpansion, R::T,
+    tmp = zeros(eltype(R), size(R)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    μ = zeros(eltype(R), kpm_expansion.M)
+    kpm_moments!(μ, A, kpm_expansion.bounds, R, tmp)
+
+    return μ
+end
+
+@doc raw"""
+    kpm_moments(
+        A, kpm_expansion::KPMExpansion, U::T, V::T,
+        tmp = zeros(eltype(V), size(V)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+If ``U`` and ``V`` are vector then calculate and return the first `kpm_expansion.M` moments
+```math
+\mu_m = \langle U | T_m(A^\prime) | V \rangle,
+```
+where ``A^\prime`` is the rescaled version of ``A`` using the `kpm_expansion.bounds`.
+If ``U`` and ``V`` are matrices then calculate the moments as
+```math
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle U_n | T_m(A^\prime) | V_n \rangle,
+```
+where ``| U_n \rangle`` and  ``| V_n \rangle`` are are the n'th columns of each matrix.
+"""
+function kpm_moments(
+    A, kpm_expansion::KPMExpansion, U::T, V::T,
+    tmp = zeros(eltype(V), size(V)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    μ = zeros(eltype(U), kpm_expansion.M)
+    kpm_moments!(μ, A, kpm_expansion.bounds, U, V, tmp)
+
+    return μ
+end
+
+@doc raw"""
+    kpm_moments!(
+        μ::AbstractVector, A, kpm_expansion::KPMExpansion, R::T,
+        tmp = zeros(eltype(R), size(R)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+If ``R`` is a vector, calculate and return the first ``M`` moments as
+```math
+\mu_m = \langle R | T_m(A^\prime) | R \rangle
+```
+where ``A^\prime`` is the rescaled version of ``A`` using the `kpm_expansion.bounds`.
+If ``R`` is a matrix then calculate the moments as
+```math
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle R_n | T_m(A^\prime) | R_n \rangle,
+```
+where ``| R_n \rangle`` is the n'th column of ``R``.
+"""
+function kpm_moments!(
+    μ::AbstractVector, A, kpm_expansion::KPMExpansion, R::T,
+    tmp = zeros(eltype(R), size(R)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    @assert length(kpm_expansion) == kpm_expansion.M
+    kpm_moments!(μ, A, kpm_expansion.bounds, R, tmp)
+
+    return nothing
+end
+
+@doc raw"""
+    kpm_moments!(
+        μ::AbstractVector, A, kpm_expansion::KPMExpansion, U::T, V::T,
+        tmp = zeros(eltype(V), size(V)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+If ``U`` and ``V`` are vector then calculate and return the first ``M`` moments
+```math
+\mu_m = \langle U | T_m(A^\prime) | V \rangle,
+```
+where ``A^\prime`` is the rescaled version of ``A`` using the `kpm_expansion.bounds`.
+If ``U`` and ``V`` are matrices then calculate the moments as
+```math
+\mu_m = \frac{1}{N} \sum_{n=1}^N \langle U_n | T_m(A^\prime) | V_n \rangle,
+```
+where ``| U_n \rangle`` and  ``| V_n \rangle`` are are the n'th columns of each matrix.
+"""
+function kpm_moments!(
+    μ::AbstractVector, A, kpm_expansion::KPMExpansion, U::T, V::T,
+    tmp = zeros(eltype(V), size(V)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    @assert length(μ) == kpm_expansion.M
+    kpm_moments!(μ, A, kpm_expansion.bounds, U, V, tmp)
+
+    return nothing
+end
+
+
+@doc raw"""
+    kpm_dot(
+        kpm_expansion::KPMExpansion, moments::AbstractVector
+    )
+
+Calculate the inner product
+```math
+\langle c | \mu \rangle = \sum_{m=1}^M c_m \cdot \mu_m,
+```
+where ``c_m`` are the KPM expansion coefficients, and ``\mu_m`` are the moments.
+Refer to [`kpm_moments`](@ref) to see how to calculate the moments.
+"""
+function kpm_dot(
+    kpm_expansion::KPMExpansion, moments::AbstractVector
+)
+
+    (; buf, M) = kpm_expansion
+    coefs = @view buf[1:M]
+    return dot(coefs, moments)
+end
+
+@doc raw"""
     kpm_dot(
         A, kpm_expansion::KPMExpansion, R::T,
         tmp = zeros(eltype(R), size(R)..., 3)
@@ -209,7 +343,7 @@ end
         tmp = zeros(eltype(v), size(v)..., 3)
     ) where {T<:AbstractVecOrMat}
 
-Evaluates ``v^\prime = F(A) \cdot v``, writing the result to `v′`, where ``F(A)`` is represented by the Chebyshev expansion.
+Evaluates ``v^\prime = F(A) \cdot v``, writing the result to ``v^\prime``, where ``F(A)`` is represented by the Chebyshev expansion.
 Here `A` is either a function that can be called as `A(u,v)` to evaluate
 ``u = A\cdot v``, modifying `u` in-place, or is a type for which the operation `mul!(u, A, v)` is defined.
 Lastly, the array `tmp` is used to avoid dynamic memory allocations.
@@ -222,6 +356,28 @@ function kpm_mul!(
     (; M, bounds, buf) = kpm_expansion
     coefs = @view buf[1:M]
     kpm_mul!(v′, A, coefs, bounds, v, tmp)
+
+    return nothing
+end
+
+
+@doc raw"""
+    kpm_lmul!(
+        A, kpm_expansion::KPMExpansion, v::T,
+        tmp = zeros(eltype(v), size(v)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+Evaluates ``v = F(A) \cdot v``, modifying ``v`` in-place, where ``F(A)`` is represented by the Chebyshev expansion.
+Here `A` is either a function that can be called as `A(u,v)` to evaluate
+``u = A\cdot v``, modifying `u` in-place, or is a type for which the operation `mul!(u, A, v)` is defined.
+Lastly, the array `tmp` is used to avoid dynamic memory allocations.
+"""
+function kpm_lmul!(
+    A, kpm_expansion::KPMExpansion, v::T,
+    tmp = zeros(eltype(v), size(v)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    kpm_mul!(v, A, kpm_expansion, v, tmp)
 
     return nothing
 end

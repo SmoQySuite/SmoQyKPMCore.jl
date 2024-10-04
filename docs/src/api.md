@@ -17,6 +17,7 @@ level one that does not.
 - [`kpm_dot`](@ref)
 - [`kpm_mul`](@ref)
 - [`kpm_mul!`](@ref)
+- [`kpm_lmul!`](@ref)
 - [`kpm_eval`](@ref)
 - [`kpm_eval!`](@ref)
 - [`apply_jackson_kernel`](@ref)
@@ -39,6 +40,7 @@ kpm_density!
 kpm_dot
 kpm_mul
 kpm_mul!
+kpm_lmul!
 kpm_eval
 kpm_eval!
 apply_jackson_kernel
