@@ -261,7 +261,7 @@ dos_jackson, ϵ_jackson = kpm_density(P, μ_jackson, bounds);
 nothing #hide
 ````
 
-Have approximated the density of states, let us now plot the result.
+Having approximated the density of states, let us now plot it.
 
 ````@example usage
 fig = Figure(

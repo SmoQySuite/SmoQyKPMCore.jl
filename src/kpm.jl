@@ -132,48 +132,35 @@ function kpm_moments!(
 ) where {T<:AbstractVecOrMat}
 
     @assert iseven(length(μ))
-    α₁ = selectdim(tmp, ndims(tmp), 1)
-    α₂ = selectdim(tmp, ndims(tmp), 2)
-    α₃ = selectdim(tmp, ndims(tmp), 3)
+    αₘ   = selectdim(tmp, ndims(tmp), 1)
+    αₘ₋₁ = selectdim(tmp, ndims(tmp), 2)
+    αₘ₋₂ = selectdim(tmp, ndims(tmp), 3)
     # order of expansion
     N = length(μ)
+    # number of random vector
+    Nᵣᵥ = size(R, 2)
     # calulate rescaling coefficients
     a, b = _rescaling_coefficients(bounds)
     # α₁ = v
-    copyto!(α₁, R)
+    copyto!(αₘ₋₂, R)
     # α₂ = A′⋅α₁ where A′ is scaled A
-    _scaled_matrix_multiply!(α₂, A, α₁, a, b)
+    _scaled_matrix_multiply!(αₘ₋₁, A, αₘ₋₂, a, b)
     # μ₁ = tr[Rᵀ⋅R]
-    μ[1] = dot(R,R) / size(R,2)
-    μ₁ = μ[1]
+    μ₁ = μ[1] = dot(αₘ₋₂, αₘ₋₂)/Nᵣᵥ
     # μ₂ = tr[Rᵀ⋅α₂]
-    μ[2] = dot(R, α₂) / size(R,2)
-    μ₂ = μ[2]
-    # αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
-    αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
-    # αₙ = A′⋅αₙ₋₁ where A′ is scaled A
-    _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
-    # αₙ = 2⋅A′⋅αₙ₋₁ - αₙ₋₂
-    axpby!(-1, αₙ₋₂, 2, αₙ)
+    μ₂ = μ[2] = dot(αₘ₋₁, αₘ₋₂)/Nᵣᵥ
     # iterate over remaining terms in sum
-    for n in 3:(N÷2)
-        # μₙ = ⟨R|αₙ⟩
-        μ[n] = dot(R, αₙ) / size(R, 2)
-        # μ₂ₙ₋₁ = 2⋅⟨αₙ₋₁|αₙ₋₁⟩ - μ₁
-        if (2*n-1) > N÷2
-            μ[2*n-1] = 2 * dot(αₙ, αₙ) / size(R, 2) - μ₁
-        end
-        # αₙ₊₁ = A′⋅αₙ where A′ is scaled A
-        αₙ₊₁ = αₙ₋₂
-        _scaled_matrix_multiply!(αₙ₊₁, A, αₙ, a, b)
-        # αₙ₊₁ = 2⋅A′⋅αₙ - αₙ₋₁
-        axpby!(-1, αₙ₋₁, 2, αₙ₊₁)
-        # μ₂ₙ = 2 * ⟨αₙ|αₙ₋₁⟩ - μ₁
-        if (2*n) > N÷2
-            μ[2*n] = 2 * dot(αₙ₊₁, αₙ) / size(R, 2) - μ₂
-        end
-        # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
-        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₊₁, αₙ, αₙ₋₁
+    for n in 1:(N÷2)
+        # μ₂ₘ₋₁ = 2⋅αₘ₋₂ᵀ⋅αₘ₋₂ - μ₁
+        μ[2*n-1] = 2 * dot(αₘ₋₂,αₘ₋₂)/Nᵣᵥ - μ₁
+        # μ₂ₘ = 2⋅αₘ₋₁ᵀ⋅αₘ₋₂ - μ₂
+        μ[2*n] = 2 * dot(αₘ₋₁,αₘ₋₂)/Nᵣᵥ - μ₂
+        # αₘ′ = (a⋅A + b⋅I)⋅αₘ₋₁
+        _scaled_matrix_multiply!(αₘ, A, αₘ₋₁, a, b)
+        # αₘ = (2-δₘ₋₂)⋅αₘ′ - αₘ₋₂
+        axpby!(-1, αₘ₋₂, 2, αₘ)
+        # rename αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
+        αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
     end
 
     return nothing
@@ -201,28 +188,30 @@ function kpm_moments!(
     tmp = zeros(eltype(V), size(V)..., 3)
 ) where {T<:AbstractVecOrMat}
 
-    αₙ = selectdim(tmp, ndims(tmp), 1)
-    αₙ₋₁ = selectdim(tmp, ndims(tmp), 2)
-    αₙ₋₂ = selectdim(tmp, ndims(tmp), 3)
+    αₘ = selectdim(tmp, ndims(tmp), 1)
+    αₘ₋₁ = selectdim(tmp, ndims(tmp), 2)
+    αₘ₋₂ = selectdim(tmp, ndims(tmp), 3)
 
     λmin, λmax = bounds
     a, b = _rescaling_coefficients(λmin, λmax)
-    # αₙ₋₂ = -V
-    @. αₙ₋₂ = -V
-    # αₙ₋₁ = 0
-    fill!(αₙ₋₁, 0)
-    # αₙ = 0
-    fill!(αₙ, 0)
+    # number of random vector
+    Nᵣᵥ = size(U, 2)
+    # αₘ₋₂ = -V
+    @. αₘ₋₂ = -V
+    # αₘ₋₁ = 0
+    fill!(αₘ₋₁, 0)
+    # αₘ = 0
+    fill!(αₘ, 0)
     # iterate of order of expansion n = 1,...,N
     for n in eachindex(μ)
-        # αₙ′ = (a⋅A + b⋅I)⋅αₙ₋₁
-        _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
-        # αₙ = (2-δₙ₋₂)⋅αₙ′ - αₙ₋₂
-        axpby!(-1, αₙ₋₂, 2 - isone(n-1), αₙ)
-        # μₙ = ⟨U|αₙ⟩
-        μ[n] = dot(U, αₙ) / size(U, 2)
-        # rename αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
-        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
+        # αₘ′ = (a⋅A + b⋅I)⋅αₘ₋₁
+        _scaled_matrix_multiply!(αₘ, A, αₘ₋₁, a, b)
+        # αₘ = (2-δₘ₋₂)⋅αₘ′ - αₘ₋₂
+        axpby!(-1, αₘ₋₂, 2 - isone(n-1), αₘ)
+        # μₘ = Uᵀ⋅αₘ
+        μ[n] = dot(U, αₘ)/Nᵣᵥ
+        # rename αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
+        αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
     end
 
     return nothing
@@ -310,6 +299,23 @@ function kpm_density!(
     return nothing
 end
 
+@doc raw"""
+    kpm_dot(
+        coefs::T, moments::T
+    ) where {T<:AbstractVector}
+
+Calculate the inner product
+```math
+\langle c | \mu \rangle = \sum_{m=1}^M c_m \cdot \mu_m,
+```
+where ``c_m`` are the KPM expansion coefficients, and ``\mu_m`` are the KPM moments.
+"""
+function kpm_dot(
+    coefs::T, moments::T
+) where {T<:AbstractVector}
+
+    return dot(coefs, moments)
+end
 
 @doc raw"""
     kpm_dot(
@@ -340,52 +346,37 @@ function kpm_dot(
 ) where {T<:AbstractVecOrMat}
 
     @assert iseven(length(coefs))
-    α₁ = selectdim(tmp, ndims(tmp), 1)
-    α₂ = selectdim(tmp, ndims(tmp), 2)
-    α₃ = selectdim(tmp, ndims(tmp), 3)
-    # initialize S = 0
-    S = zero(eltype(R))
+    αₘ   = selectdim(tmp, ndims(tmp), 1)
+    αₘ₋₁ = selectdim(tmp, ndims(tmp), 2)
+    αₘ₋₂ = selectdim(tmp, ndims(tmp), 3)
     # order of expansion
     N = length(coefs)
+    # number of random vector
+    Nᵣᵥ = size(R, 2)
+    # initialize S = 0
+    S = zero(eltype(R))
     # calulate rescaling coefficients
     a, b = _rescaling_coefficients(bounds)
     # α₁ = v
-    copyto!(α₁, R)
+    copyto!(αₘ₋₂, R)
     # α₂ = A′⋅α₁ where A′ is scaled A
-    _scaled_matrix_multiply!(α₂, A, α₁, a, b)
-    # μ₁ = tr[Rᵀ⋅R]
-    μ₁ = dot(R,R) / size(R,2)
-    # S = S + c₁⋅μ₁
-    S += coefs[1] * μ₁
-    # μ₂ = tr[Rᵀ⋅α₂]
-    μ₂ = dot(R, α₂) / size(R,2)
-    # S = S + c₂⋅μ₂
-    S += coefs[2] * μ₂
-    # αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
-    αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
-    # αₙ = A′⋅αₙ₋₁ where A′ is scaled A
-    _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
-    # αₙ = 2⋅A′⋅αₙ₋₁ - αₙ₋₂
-    axpby!(-1, αₙ₋₂, 2, αₙ)
+    _scaled_matrix_multiply!(αₘ₋₁, A, αₘ₋₂, a, b)
+    # μ₁ = tr[Rᵀ⋅R] = tr[α₁ᵀ⋅α₁]
+    μ₁ = dot(αₘ₋₂, αₘ₋₂)/Nᵣᵥ
+    # μ₂ = tr[α₂ᵀ⋅R] = tr[α₂ᵀ⋅α₁]
+    μ₂ = dot(αₘ₋₁, αₘ₋₂)/Nᵣᵥ
     # iterate over remaining terms in sum
-    for n in 3:(N÷2)
-        # S = S + cₙ⋅⟨R|αₙ⟩
-        S += coefs[n] * dot(R, αₙ) / size(R, 2)
-        # S = S + c₂ₙ₋₁⋅(2⋅⟨αₙ₋₁|αₙ₋₁⟩ - μ₁)
-        if (2*n-1) > N÷2
-            S += coefs[2*n-1] * (2 * dot(αₙ, αₙ) / size(R, 2) - μ₁)
-        end
-        # αₙ₊₁ = A′⋅αₙ where A′ is scaled A
-        αₙ₊₁ = αₙ₋₂
-        _scaled_matrix_multiply!(αₙ₊₁, A, αₙ, a, b)
-        # αₙ₊₁ = 2⋅A′⋅αₙ - αₙ₋₁
-        axpby!(-1, αₙ₋₁, 2, αₙ₊₁)
-        # S = c₂ₙ⋅(2 * ⟨αₙ|αₙ₋₁⟩ - μ₁)
-        if (2*n) > N÷2
-            S += coefs[2*n] * (2 * dot(αₙ₊₁, αₙ) / size(R, 2) - μ₂)
-        end
-        # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
-        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₊₁, αₙ, αₙ₋₁
+    for n in 1:(N÷2)
+        # S = S + c₂ₘ₋₁⋅(2⋅αₘ₋₂ᵀ⋅αₘ₋₂ - μ₁)
+        S += coefs[2*n-1] * (2 * dot(αₘ₋₂,αₘ₋₂)/Nᵣᵥ - μ₁)
+        # S = S + c₂ₘ⋅(2⋅αₘ₋₁ᵀ⋅αₘ₋₂ - μ₂)
+        S += coefs[2*n] * (2 * dot(αₘ₋₁,αₘ₋₂)/Nᵣᵥ - μ₂)
+        # αₘ′ = (a⋅A + b⋅I)⋅αₘ₋₁
+        _scaled_matrix_multiply!(αₘ, A, αₘ₋₁, a, b)
+        # αₘ = 2⋅αₘ′ - αₘ₋₂ = 2⋅(a⋅A + b⋅I)⋅αₘ₋₁ - αₘ₋₂
+        axpby!(-1, αₘ₋₂, 2, αₘ)
+        # rename αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
+        αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
     end
 
     return S
@@ -419,29 +410,29 @@ function kpm_dot(
     tmp = zeros(eltype(V), size(V)..., 3)
 ) where {T<:AbstractVecOrMat}
 
-    αₙ = selectdim(tmp, ndims(tmp), 1)
-    αₙ₋₁ = selectdim(tmp, ndims(tmp), 2)
-    αₙ₋₂ = selectdim(tmp, ndims(tmp), 3)
+    αₘ = selectdim(tmp, ndims(tmp), 1)
+    αₘ₋₁ = selectdim(tmp, ndims(tmp), 2)
+    αₘ₋₂ = selectdim(tmp, ndims(tmp), 3)
     λmin, λmax = bounds
     a, b = _rescaling_coefficients(λmin, λmax)
     # initialize S = 0
     S = zero(eltype(V))
-    # αₙ₋₂ = -V
-    @. αₙ₋₂ = -V
-    # αₙ₋₁ = 0
-    fill!(αₙ₋₁, 0)
-    # αₙ = 0
-    fill!(αₙ, 0)
+    # αₘ₋₂ = -V
+    @. αₘ₋₂ = -V
+    # αₘ₋₁ = 0
+    fill!(αₘ₋₁, 0)
+    # αₘ = 0
+    fill!(αₘ, 0)
     # iterate of order of expansion n = 1,...,N
-    for (n,cₙ) in enumerate(coefs)
-        # αₙ′ = (a⋅A + b⋅I)⋅αₙ₋₁
-        _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
-        # αₙ = (2-δₙ₋₂)⋅αₙ′ - αₙ₋₂
-        axpby!(-1, αₙ₋₂, 2 - isone(n-1), αₙ)
-        # S = S + cₙ⋅⟨U|αₙ⟩
-        S += cₙ * dot(U, αₙ) / size(U, 2)
-        # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
-        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
+    for (n,cₘ) in enumerate(coefs)
+        # αₘ′ = (a⋅A + b⋅I)⋅αₘ₋₁
+        _scaled_matrix_multiply!(αₘ, A, αₘ₋₁, a, b)
+        # αₘ = (2-δₘ₋₂)⋅αₘ′ - αₘ₋₂
+        axpby!(-1, αₘ₋₂, 2 - isone(n-1), αₘ)
+        # S = S + cₘ⋅⟨U|αₘ⟩
+        S += cₘ * dot(U, αₘ) / size(U, 2)
+        # αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
+        αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
     end
 
     return S
@@ -472,7 +463,7 @@ end
         tmp = zeros(eltype(v), size(v)..., 3)
     ) where {T<:AbstractVecOrMat}
 
-Evaluates ``v^\prime = F(A) \cdot v``, writing the result to `v′`, where ``F(A)`` is represented by the Chebyshev expansion.
+Evaluates ``v^\prime = F(A) \cdot v``, writing the result to ``v^\prime``, where ``F(A)`` is represented by the Chebyshev expansion.
 Here `A` is either a function that can be called as `A(u,v)` to evaluate
 ``u = A\cdot v``, modifying `u` in-place, or is a type for which the operation `mul!(u, A, v)` is defined.
 The vector `coefs` contains Chebyshev expansion coefficients to approximate ``F(A)``, where the eigenspectrum
@@ -485,60 +476,59 @@ function kpm_mul!(
     tmp = zeros(eltype(v), size(v)..., 3)
 ) where {T<:AbstractVecOrMat}
 
-    αₙ = selectdim(tmp, ndims(tmp), 1)
-    αₙ₋₁ = selectdim(tmp, ndims(tmp), 2)
-    αₙ₋₂ = selectdim(tmp, ndims(tmp), 3)
+    αₘ = selectdim(tmp, ndims(tmp), 1)
+    αₘ₋₁ = selectdim(tmp, ndims(tmp), 2)
+    αₘ₋₂ = selectdim(tmp, ndims(tmp), 3)
     λmin, λmax = bounds
     a, b = _rescaling_coefficients(λmin, λmax)
+    # αₘ₋₂ = -v
+    @. αₘ₋₂ = -v
+    # αₘ₋₁ = 0
+    fill!(αₘ₋₁, 0)
+    # αₘ = 0
+    fill!(αₘ, 0)
     # initialize v′ = 0.0
     fill!(v′, 0)
-    # αₙ₋₂ = -v
-    @. αₙ₋₂ = -v
-    # αₙ₋₁ = 0
-    fill!(αₙ₋₁, 0)
-    # αₙ = 0
-    fill!(αₙ, 0)
     # iterate of order of expansion n = 1,...,N
-    for (n,cₙ) in enumerate(coefs)
-        # αₙ′ = (a⋅A + b⋅I)⋅αₙ₋₁
-        _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
-        # αₙ = (2-δₙ₋₂)⋅αₙ′ - αₙ₋₂
-        axpby!(-1, αₙ₋₂, 2 - isone(n-1), αₙ)
-        # v′ = v′ + cₙ⋅αₙ
-        axpy!(cₙ, αₙ, v′)
-        # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
-        αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
+    for (n,cₘ) in enumerate(coefs)
+        # αₘ′ = (a⋅A + b⋅I)⋅αₘ₋₁
+        _scaled_matrix_multiply!(αₘ, A, αₘ₋₁, a, b)
+        # αₘ = (2-δₘ₋₂)⋅αₘ′ - αₘ₋₂
+        axpby!(-1, αₘ₋₂, 2 - isone(n-1), αₘ)
+        # v′ = v′ + cₘ⋅αₘ
+        axpy!(cₘ, αₘ, v′)
+        # αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
+        αₘ, αₘ₋₁, αₘ₋₂ = αₘ₋₂, αₘ, αₘ₋₁
     end
-
-    # α₁ = selectdim(tmp, ndims(tmp), 1)
-    # α₂ = selectdim(tmp, ndims(tmp), 2)
-    # α₃ = selectdim(tmp, ndims(tmp), 3)
-    # # calulate rescaling coefficients
-    # a, b = _rescaling_coefficients(bounds)
-    # # α₁ = v
-    # copyto!(α₁, v)
-    # # v′ = c₁⋅α₁
-    # @. v′ = coefs[1] * α₁
-    # # α₂ = A′⋅α₁ where A′ is scaled A
-    # _scaled_matrix_multiply!(α₂, A, α₁, a, b)
-    # # v′ = c₂⋅α₂ + v′
-    # axpy!(coefs[2], α₂, v′)
-    # # αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
-    # αₙ, αₙ₋₁, αₙ₋₂ = α₃, α₂, α₁
-    # # iterate over remaining terms in sum
-    # for cₙ in @view coefs[3:end]
-    #     # αₙ = A′⋅αₙ₋₁ where A′ is scaled A
-    #     _scaled_matrix_multiply!(αₙ, A, αₙ₋₁, a, b)
-    #     # αₙ = 2⋅A′⋅αₙ₋₁ - αₙ₋₂
-    #     axpby!(-1, αₙ₋₂, 2, αₙ)
-    #     # v′ = cₙ⋅αₙ + v′
-    #     axpy!(cₙ, αₙ, v′)
-    #     # αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
-    #     αₙ, αₙ₋₁, αₙ₋₂ = αₙ₋₂, αₙ, αₙ₋₁
-    # end
 
     return nothing
 end
+
+
+@doc raw"""
+    kpm_lmul!(
+        A, coefs::AbstractVector, v::T, bounds,
+        tmp = zeros(eltype(v), size(v)..., 3)
+    ) where {T<:AbstractVecOrMat}
+
+Evaluates ``v = F(A) \cdot v``, modifying ``v`` in-place, where ``F(A)`` is represented by the Chebyshev expansion.
+Here `A` is either a function that can be called as `A(u,v)` to evaluate
+``u = A\cdot v``, modifying `u` in-place, or is a type for which the operation `mul!(u, A, v)` is defined.
+The vector `coefs` contains Chebyshev expansion coefficients to approximate ``F(A)``, where the eigenspectrum
+of ``A`` is contained in the interval `(bounds[1], bounds[2])` specified by the `bounds` argument.
+The vector `v` is vector getting multiplied by the Chebyshev expansion for ``F(A)``.
+Lastly, `tmp` is an array used to avoid dynamic memory allocations.
+"""
+function kpm_lmul!(
+    A, coefs::AbstractVector, v::T, bounds,
+    tmp = zeros(eltype(v), size(v)..., 3)
+) where {T<:AbstractVecOrMat}
+
+    kpm_mul!(v, A, coefs, bounds, v, tmp)
+
+    return nothing
+end
+
 
 @doc raw"""
     kpm_eval(x::AbstractFloat, coefs, bounds)
@@ -557,15 +547,15 @@ function kpm_eval(x::AbstractFloat, coefs, bounds)
     T₁, T₂ = one(x′), x′
     # F = c₁⋅T₁ + c₂⋅T₂
     F = coefs[1]*T₁ + coefs[2]*T₂
-    # rename Tₙ₋₁, Tₙ₋₂ = T₂, T₁
-    Tₙ₋₁, Tₙ₋₂ = T₂, T₁
-    for cₙ in @view coefs[3:end]
-        # Tₙ = 2⋅x′⋅Tₙ₋₁ - Tₙ₋₂
-        Tₙ = 2*x′*Tₙ₋₁ - Tₙ₋₂
-        # F = cₙ⋅Tₙ + F
-        F = cₙ * Tₙ + F
-        # rename Tₙ₋₁, Tₙ₋₂ = Tₙ, Tₙ₋₁
-        Tₙ₋₁, Tₙ₋₂ = Tₙ, Tₙ₋₁
+    # rename Tₘ₋₁, Tₘ₋₂ = T₂, T₁
+    Tₘ₋₁, Tₘ₋₂ = T₂, T₁
+    for cₘ in @view coefs[3:end]
+        # Tₘ = 2⋅x′⋅Tₘ₋₁ - Tₘ₋₂
+        Tₘ = 2*x′*Tₘ₋₁ - Tₘ₋₂
+        # F = cₘ⋅Tₘ + F
+        F = cₘ * Tₘ + F
+        # rename Tₘ₋₁, Tₘ₋₂ = Tₘ, Tₘ₋₁
+        Tₘ₋₁, Tₘ₋₂ = Tₘ, Tₘ₋₁
     end
 
     return F
@@ -591,7 +581,7 @@ end
 @doc raw"""
     kpm_eval!(
         F::AbstractMatrix, A, coefs::AbstractVector, bounds,
-        tmp = zeros(eltype(F), size(F)..., 3)
+        tmp = zeros(eltype(F), size(F)..., 4)
     )
 
 Evaluate and write the matrix ``F(A)`` to `F`, where ``A`` is an operator with strictly real eigenvalues that
@@ -604,60 +594,8 @@ function kpm_eval!(
     tmp = zeros(eltype(F), size(F)..., 3)
 )
 
-    Tₙ = selectdim(tmp, 3, 1)
-    Tₙ₋₁ = selectdim(tmp, 3, 2)
-    Tₙ₋₂ = selectdim(tmp, 3, 3)
-    # calulate rescaling coefficients
-    a, b = _rescaling_coefficients(bounds)
-    # initialize F = 0
-    fill!(F, 0)
-    # Tₙ₋₂ = -I
-    copyto!(Tₙ₋₂, I)
-    @. Tₙ₋₂ = -Tₙ₋₂
-    # Tₙ₋₁ = 0
-    fill!(Tₙ₋₁, 0)
-    # Tₙ = 0
-    fill!(Tₙ, 0)
-    # Iterate over expansion orders n = 1,...,N
-    for (n,cₙ) in enumerate(coefs)
-        # Tₙ′ = (a⋅A + b⋅I)⋅Tₙ₋₁
-        _scaled_matrix_multiply!(Tₙ, A, Tₙ₋₁, a, b)
-        # Tₙ = (2-δₙ₋₂)⋅Tₙ′ - Tₙ₋₂ = (2-δₙ₋₂)⋅(a⋅A + b⋅I)⋅Tₙ₋₁ - Tₙ₋₂
-        axpby!(-1, Tₙ₋₂, 2-isone(n-1), Tₙ)
-        # F = cₙ⋅Tₙ + F
-        axpy!(cₙ, Tₙ, F)
-        # rename Tₙ, Tₙ₋₁, Tₙ₋₂ = Tₙ₋₂, Tₙ, Tₙ₋₁
-        Tₙ, Tₙ₋₁, Tₙ₋₂ = Tₙ₋₂, Tₙ, Tₙ₋₁
-    end
-
-    # T₁ = selectdim(tmp, 3, 1)
-    # T₂ = selectdim(tmp, 3, 2)
-    # T₃ = selectdim(tmp, 3, 3)
-    # # calulate rescaling coefficients
-    # a, b = _rescaling_coefficients(bounds)
-    # # T₁ = I
-    # copyto!(T₁, I)
-    # # T₂ = A
-    # _matrix_multiply!(T₂, A, T₁)
-    # # T₂ = A′ where A′ is rescaled A
-    # axpby!(b, T₁, a, T₂)
-    # # F = c₁⋅T₁ + c₂⋅T₂
-    # @. F = coefs[1]*T₁ + coefs[2]*T₂
-    # # rename Tₙ, Tₙ₋₁, Tₙ₋₂ = T₃, T₂, T₁
-    # Tₙ, Tₙ₋₁, Tₙ₋₂ = T₃, T₂, T₁
-    # # iterate over remaining terms in sum
-    # for cₙ in @view coefs[3:end]
-    #     # Tₙ = A⋅Tₙ₋₁
-    #     _matrix_multiply!(Tₙ, A, Tₙ₋₁)
-    #     # Tₙ = A′⋅Tₙ₋₁ where A′ is scaled A
-    #     axpby!(b, Tₙ₋₁, a, Tₙ)
-    #     # Tₙ = 2⋅A′⋅Tₙ₋₁ - Tₙ₋₂
-    #     axpby!(-1, Tₙ₋₂, 2, Tₙ)
-    #     # F = cₙ⋅Tₙ + F
-    #     axpy!(cₙ, Tₙ, F)
-    #     # rename Tₙ, Tₙ₋₁, Tₙ₋₂ = Tₙ₋₂, Tₙ, Tₙ₋₁
-    #     Tₙ, Tₙ₋₁, Tₙ₋₂ = Tₙ₋₂, Tₙ, Tₙ₋₁
-    # end
+    copyto!(F, I)
+    kpm_mul!(F, A, coefs, bounds, F, tmp)
 
     return nothing
 end
@@ -669,7 +607,7 @@ Modify the Chebyshev expansion coefficients by applying the Jackson kernel to th
 """
 function apply_jackson_kernel!(coefs)
 
-    Mp = lastindex(coefs) + 2
+    Mp = lastindex(coefs)
     for i in eachindex(coefs)
         m = i-1
         coefs[i] *= (1/Mp)*((Mp-m)cos(m*π/Mp) + sin(m*π/Mp)/tan(π/Mp))

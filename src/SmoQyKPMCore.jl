@@ -11,6 +11,7 @@ export kpm_moments, kpm_moments!
 export kpm_density, kpm_density!
 export kpm_dot
 export kpm_mul, kpm_mul!
+export kpm_lmul!
 export kpm_eval, kpm_eval!
 export apply_jackson_kernel, apply_jackson_kernel!
 
