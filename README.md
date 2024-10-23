@@ -9,5 +9,4 @@ approximating functions of operators with strictly real, bounded eigenvalues via
 
 ## Funding
 
-The development of this code was supported by the U.S. Department of Energy, Office of Science, Basic Energy Sciences,
-under Award Number DE-SC0022311.
+The development of this package was supported by the National Science Foundation under Grant No. OAC-2410280.
