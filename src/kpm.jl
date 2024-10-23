@@ -141,7 +141,7 @@ function kpm_moments!(
     Nᵣᵥ = size(R, 2)
     # calulate rescaling coefficients
     a, b = _rescaling_coefficients(bounds)
-    # α₁ = v
+    # α₁ = R
     copyto!(αₘ₋₂, R)
     # α₂ = A′⋅α₁ where A′ is scaled A
     _scaled_matrix_multiply!(αₘ₋₁, A, αₘ₋₂, a, b)
