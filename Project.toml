@@ -1,7 +1,7 @@
 name = "SmoQyKPMCore"
 uuid = "30e33e58-a96a-4fec-8c75-57692dd3ff18"
 authors = ["Benjamin Cohen-Stead <benwcs@gmail.com>", "Steven Johnston <sjohn145@utk.edu>", "Kipton Barros <kbarros@lanl.gov>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"

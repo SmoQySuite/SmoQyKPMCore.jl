@@ -48,8 +48,6 @@ function lanczos(niters, v, A, S = I; rng = Random.default_rng())
 
     αs = zeros(real(eltype(v)), niters, size(v)[2:end]...)
     βs = zeros(real(eltype(v)), niters-1, size(v)[2:end]...)
-    # println(typeof(αs), ", ", size(αs))
-    # println(typeof(βs), ", ", size(βs))
 
     symtridiag = lanczos!(αs, βs, v, A, S; rng = rng)
 
@@ -92,12 +90,9 @@ of length `size(v,2)` will be returned.
 
 # Similar generalizations of Lanczos have been considered in [2] and [3].
 #
-# 1. C. C. Paige, IMA J. Appl. Math., 373-381 (1972),
-# https://doi.org/10.1093%2Fimamat%2F10.3.373.
-# 2. H. A. van der Vorst, Math. Comp. 39, 559-561 (1982),
-# https://doi.org/10.1090/s0025-5718-1982-0669648-0
-# 3. M. Grüning, A. Marini, X. Gonze, Comput. Mater. Sci. 50, 2148-2156 (2011),
-# https://doi.org/10.1016/j.commatsci.2011.02.021.
+# 1. C. C. Paige, IMA J. Appl. Math., 373-381 (1972), https://doi.org/10.1093%2Fimamat%2F10.3.373.
+# 2. H. A. van der Vorst, Math. Comp. 39, 559-561 (1982), https://doi.org/10.1090/s0025-5718-1982-0669648-0
+# 3. M. Grüning, A. Marini, X. Gonze, Comput. Mater. Sci. 50, 2148-2156 (2011), https://doi.org/10.1016/j.commatsci.2011.02.021.
 """
 function lanczos!(
     αs::AbstractVector, βs::AbstractVector, v::AbstractVector,
@@ -124,10 +119,10 @@ function lanczos!(
     α = dot(w, Sv)
     @. w = w - α * v
     _matrix_multiply!(Sw, S, w)
-    αs[1] = α
+    αs[1] = real(α)
 
     for n in 2:niters
-        β = sqrt(dot(Sw, w))
+        β = real(sqrt(dot(Sw, w)))
         iszero(β) && break
         @. vp = w / β
         @. Svp = Sw / β
@@ -136,8 +131,8 @@ function lanczos!(
         @. w = w - α * vp - β * v
         _matrix_multiply!(Sw, S, w)
         @. v = vp
-        αs[n] = α
-        βs[n-1] = β
+        αs[n] = real(α)
+        βs[n-1] = real(β)
     end
 
     return SymTridiagonal(αs, βs)
@@ -191,4 +186,5 @@ function lanczos!(
     return [SymTridiagonal(view(αs,:,n), view(βs,:,n)) for n in axes(v,2)]
 end
 
-_vdot!(uv, u, v) = map!(dot, uv, eachcol(u), eachcol(v))
+_vdot!(uv, u, v) = map!(_rdot, uv, eachcol(u), eachcol(v))
+_rdot(u,v) = real(dot(u,v))
