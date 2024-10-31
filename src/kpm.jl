@@ -20,7 +20,7 @@ end
     kpm_coefs!(
         coefs::AbstractVector{T}, func::Function, bounds,
         buf::Vector{T} = zeros(T, 2*length(coefs)),
-        r2rplan = FFTW.plan_r2r!(zeros(T, 2*length(coefs)), FFTW.REDFT10)
+        r2rplan = FFTW.plan_r2r!(buf, FFTW.REDFT10)
     ) where {T<:AbstractFloat}
 
 Calculate and record the Chebyshev polynomial expansion coefficients to order `M` in the vector `ceofs`
@@ -31,7 +31,7 @@ quadrature to compute the Chebyshev polynomial expansion coefficients.
 function kpm_coefs!(
     coefs::AbstractVector{T}, func::Function, bounds,
     buf::Vector{T} = zeros(T, 2*length(coefs)),
-    r2rplan = FFTW.plan_r2r!(zeros(T, 2*length(coefs)), FFTW.REDFT10)
+    r2rplan = FFTW.plan_r2r!(buf, FFTW.REDFT10)
 ) where {T<:AbstractFloat}
 
     M = length(coefs)
