@@ -57,15 +57,15 @@ end
 @doc raw"""
     lanczos!(
         αs::AbstractVector, βs::AbstractVector, v::AbstractVector,
-        A, S = I,
-        tmp::AbstractMatrix = zeros(eltype(v), length(v), 5);
+        A, S = I;
+        tmp::AbstractMatrix = zeros(eltype(v), length(v), 5),
         rng = Random.default_rng()
     )
 
     lanczos!(
         αs::AbstractMatrix, βs::AbstractMatrix, v::AbstractMatrix,
-        A, S = I,
-        tmp::AbstractArray = zeros(eltype(v), size(v)..., 5);
+        A, S = I;
+        tmp::AbstractArray = zeros(eltype(v), size(v)..., 5),
         rng = Random.default_rng()
     )
 
@@ -96,8 +96,8 @@ of length `size(v,2)` will be returned.
 """
 function lanczos!(
     αs::AbstractVector, βs::AbstractVector, v::AbstractVector,
-    A, S = I,
-    tmp::AbstractMatrix = zeros(eltype(v), length(v), 5);
+    A, S = I;
+    tmp::AbstractMatrix = zeros(eltype(v), length(v), 5),
     rng = Random.default_rng()
 )
 
@@ -140,8 +140,8 @@ end
 
 function lanczos!(
     αs::AbstractMatrix, βs::AbstractMatrix, v::AbstractMatrix,
-    A, S = I,
-    tmp::AbstractArray = zeros(eltype(v), size(v)..., 5);
+    A, S = I;
+    tmp::AbstractArray = zeros(eltype(v), size(v)..., 5),
     rng = Random.default_rng()
 )
 
