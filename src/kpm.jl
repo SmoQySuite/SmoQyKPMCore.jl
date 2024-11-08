@@ -19,7 +19,7 @@ end
 @doc raw"""
     kpm_coefs!(
         coefs::AbstractVector{T}, func::Function, bounds,
-        buf::Vector{T} = zeros(T, 2*length(coefs)),
+        buf::AbstractVector{T} = zeros(T, 2*length(coefs)),
         r2rplan = FFTW.plan_r2r!(buf, FFTW.REDFT10)
     ) where {T<:AbstractFloat}
 
@@ -30,7 +30,7 @@ quadrature to compute the Chebyshev polynomial expansion coefficients.
 """
 function kpm_coefs!(
     coefs::AbstractVector{T}, func::Function, bounds,
-    buf::Vector{T} = zeros(T, 2*length(coefs)),
+    buf::AbstractVector{T} = zeros(T, 2*length(coefs)),
     r2rplan = FFTW.plan_r2r!(buf, FFTW.REDFT10)
 ) where {T<:AbstractFloat}
 
