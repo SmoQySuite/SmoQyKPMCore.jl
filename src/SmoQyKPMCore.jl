@@ -22,6 +22,12 @@ export kpm_update!, kpm_update_bounds!, kpm_update_order!
 include("lanczos.jl")
 export lanczos, lanczos!
 
+# export relevant symbols from CUDA extension
+KPMExpansionCUDA() = error(
+    "This functionality is available after importing CUDA."
+)
+export KPMExpansionCUDA
+
 # ensure FFTW uses only a single thread
 function __init__()
     FFTW.set_num_threads(1)

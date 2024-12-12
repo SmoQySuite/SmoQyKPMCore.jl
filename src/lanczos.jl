@@ -65,7 +65,7 @@ end
     lanczos!(
         αs::AbstractMatrix, βs::AbstractMatrix, v::AbstractMatrix,
         A, S = I;
-        tmp::AbstractArray = zeros(eltype(v), size(v)..., 5),
+        tmp::AbstractArray = zeros(eltype(v), size(v,1), size(v,2), 5),
         rng = Random.default_rng()
     )
 
@@ -101,6 +101,30 @@ function lanczos!(
     rng = Random.default_rng()
 )
 
+    _lanczos!(αs, βs, v, A, S, tmp, rng)
+
+    return SymTridiagonal(αs, βs)
+end
+
+function lanczos!(
+    αs::AbstractMatrix, βs::AbstractMatrix, v::AbstractMatrix,
+    A, S = I;
+    tmp::AbstractArray = zeros(eltype(v), size(v,1), size(v,2), 5),
+    rng = Random.default_rng()
+)
+
+    _lanczos!(αs, βs, v, A, S, tmp, rng)
+
+    return [SymTridiagonal(view(αs,:,n), view(βs,:,n)) for n in axes(v,2)]
+end
+
+
+# lanczos for single vector
+function _lanczos!(
+    αs::AbstractVector, βs::AbstractVector, v::AbstractVector,
+    A, S, tmp, rng
+)
+
     (vp, Sv, Svp, w, Sw) = eachcol(tmp)
 
     niters = length(αs)
@@ -111,9 +135,9 @@ function lanczos!(
     end
 
     _matrix_multiply!(Sv, S, v)
-    c = sqrt(dot(v, Sv))
-    @. v /= c
-    @. Sv /= c
+    β = sqrt(dot(v, Sv))
+    @. v /= β
+    @. Sv /= β
 
     _matrix_multiply!(w, A, Sv)
     α = dot(w, Sv)
@@ -135,14 +159,13 @@ function lanczos!(
         βs[n-1] = real(β)
     end
 
-    return SymTridiagonal(αs, βs)
+    return nothing
 end
 
-function lanczos!(
+# batched lanczos for multiple vectors
+function _lanczos!(
     αs::AbstractMatrix, βs::AbstractMatrix, v::AbstractMatrix,
-    A, S = I;
-    tmp::AbstractArray = zeros(eltype(v), size(v)..., 5),
-    rng = Random.default_rng()
+    A, S, tmp, rng
 )
 
     (vp, Sv, Svp, w, Sw) = eachslice(tmp, dims = 3)
@@ -183,7 +206,7 @@ function lanczos!(
         @. v = vp
     end
 
-    return [SymTridiagonal(view(αs,:,n), view(βs,:,n)) for n in axes(v,2)]
+    return nothing
 end
 
 _vdot!(uv, u, v) = map!(_rdot, uv, eachcol(u), eachcol(v))
