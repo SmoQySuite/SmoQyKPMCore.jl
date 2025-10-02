@@ -24,7 +24,7 @@ export lanczos, lanczos!
 
 # export relevant symbols from CUDA extension
 KPMExpansionCUDA() = error(
-    "This functionality is available after importing CUDA."
+    "This functionality is only available after importing CUDA."
 )
 export KPMExpansionCUDA
 
