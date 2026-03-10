@@ -639,10 +639,12 @@ function _rescaling_coefficients(λ_min, λ_max)
     return 2/λ_diff, -λ_sum/λ_diff
 end
 
-# evaluate y = A′⋅x, modifying y in-place where A′ is the scaled version of A
+# evaluate y = A′⋅x = (a⋅A + b)⋅x , modifying y in-place where A′ is the scaled version of A
 function _scaled_matrix_multiply!(y, A, x, a, b)
 
+    # y = A⋅x
     _matrix_multiply!(y, A, x)
+    # a⋅y + b⋅x = a⋅A⋅x + b⋅x = (a⋅A + b)⋅x = A′⋅x
     axpby!(b, x, a, y)
 
     return nothing
