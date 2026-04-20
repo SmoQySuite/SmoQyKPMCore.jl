@@ -41,22 +41,22 @@ fermi(ϵ, μ, β) = (1+tanh(β*(ϵ-μ)/2))/2</code></pre><pre class="documenter-
 
 # Calculate the density matrix.
 ρ = U * Diagonal(fermi.(ϵ, μ, β)) * adjoint(U)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">16×16 Matrix{Float64}:
-  0.5          -0.30913      -3.46991e-16  …   2.5672e-16   -0.30913
- -0.30913       0.5          -0.30913          0.0826932     2.42857e-16
- -3.19222e-16  -0.30913       0.5              6.93703e-17   0.0826932
-  0.0826932    -5.55205e-17  -0.30913         -0.0320635    -2.08213e-17
-  3.95484e-16   0.0826932    -8.25775e-16     -3.19208e-16  -0.0320635
- -0.0320635    -7.63371e-17   0.0826932    …   0.00866812   -7.63325e-17
- -1.59627e-16  -0.0320635     4.23226e-16      1.38759e-16   0.00866812
-  0.00866812   -1.11032e-16  -0.0320635        0.00866812    6.93843e-17
-  1.87318e-16   0.00866812   -2.9148e-16      -1.87369e-16   0.00866812
-  0.00866812    2.5673e-16    0.00866812      -0.0320635    -6.93936e-17
- -3.05344e-16   0.00866812    2.49754e-16  …   3.53865e-16  -0.0320635
- -0.0320635    -2.77565e-16   0.00866812       0.0826932    -2.77602e-17
-  9.0173e-17   -0.0320635     4.85676e-16     -3.33086e-16   0.0826932
-  0.0826932    -5.41243e-16  -0.0320635       -0.30913       2.42857e-16
-  2.56706e-16   0.0826932     6.93424e-17      0.5          -0.30913
- -0.30913       2.35913e-16   0.0826932    …  -0.30913       0.5</code></pre><p>Now let use the <a href="../api/#SmoQyKPMCore.KPMExpansion"><code>KPMExpansion</code></a> type to approximate <span>$\rho$</span>. We will need to define the order <span>$M$</span> of the expansion and give approximate bounds for the eigenspectrum of <span>$H$</span>, making sure to overestimate the the true interval spanned by the eigenvalues of <span>$H$</span>. Because we are considering the simple non-interacting model, the exact eigenspectrum of <span>$H$</span> is known and spans the interval <span>$\epsilon \in [-2t, 2t].$</span></p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
+  0.5          -0.30913      -2.70673e-16  …   4.16315e-16  -0.30913
+ -0.30913       0.5          -0.30913          0.0826932     2.56734e-16
+ -2.42894e-16  -0.30913       0.5              6.92028e-18   0.0826932
+  0.0826932    -2.91452e-16  -0.30913         -0.0320635     2.77509e-17
+  1.17929e-16   0.0826932    -3.26184e-16      1.38592e-17  -0.0320635
+ -0.0320635     9.0187e-17    0.0826932    …   0.00866812   -9.71492e-17
+ -1.73505e-16  -0.0320635     2.21989e-16      1.80393e-16   0.00866812
+  0.00866812   -1.04102e-16  -0.0320635        0.00866812    6.93843e-17
+  1.38745e-16   0.00866812   -1.31895e-16     -1.52674e-16   0.00866812
+  0.00866812    2.01209e-16   0.00866812      -0.0320635    -1.17966e-16
+ -1.39104e-17   0.00866812   -2.08223e-16  …   1.3182e-16   -0.0320635
+ -0.0320635     6.24314e-17   0.00866812       0.0826932     2.0812e-17
+  1.38452e-17  -0.0320635     2.08111e-16     -2.63697e-16   0.0826932
+  0.0826932    -7.21664e-16  -0.0320635       -0.30913       2.8449e-16
+  4.16301e-16   0.0826932     2.07608e-17      0.5          -0.30913
+ -0.30913       2.49782e-16   0.0826932    …  -0.30913       0.5</code></pre><p>Now let use the <a href="../api/#SmoQyKPMCore.KPMExpansion"><code>KPMExpansion</code></a> type to approximate <span>$\rho$</span>. We will need to define the order <span>$M$</span> of the expansion and give approximate bounds for the eigenspectrum of <span>$H$</span>, making sure to overestimate the the true interval spanned by the eigenvalues of <span>$H$</span>. Because we are considering the simple non-interacting model, the exact eigenspectrum of <span>$H$</span> is known and spans the interval <span>$\epsilon \in [-2t, 2t].$</span></p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
 bounds = (-3.0t, 3.0t)
 
 # Define order of Chebyshev expansion used in KPM approximation.
@@ -73,7 +73,7 @@ mtmp = zeros(L,L,3)
 kpm_eval!(ρ_kpm, H, kpm_expansion, mtmp)
 
 # Check how good an approximation it is.
-println(&quot;Matrix Error = &quot;, norm(ρ_kpm - ρ)/norm(ρ) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 0.01669022782185732</code></pre><p>It is also possible to efficiently multiply vectors by KPM approximation to the density matrix <span>$\rho$</span>. Let us test this functionality with the <a href="../api/#SmoQyKPMCore.kpm_mul!"><code>kpm_mul!</code></a> on a random vector, seeing how accurate the result is.</p><pre><code class="language-julia hljs"># Initialize random vector.
+println(&quot;Matrix Error = &quot;, norm(ρ_kpm - ρ)/norm(ρ) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 0.01669022782185739</code></pre><p>It is also possible to efficiently multiply vectors by KPM approximation to the density matrix <span>$\rho$</span>. Let us test this functionality with the <a href="../api/#SmoQyKPMCore.kpm_mul!"><code>kpm_mul!</code></a> on a random vector, seeing how accurate the result is.</p><pre><code class="language-julia hljs"># Initialize random vector.
 v = randn(L)
 
 # Calculate exact product with density matrix.
@@ -89,7 +89,7 @@ vtmp = zeros(L, 3)
 kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
-println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Vector Error = 0.013701768952120132</code></pre><p>Let us now provide the KPM approximation with better bounds on the eigenspectrum and also increase the order the of the expansion and see how the result improves. We will use the <a href="../api/#SmoQyKPMCore.kpm_update!"><code>kpm_update!</code></a> function to update the <a href="../api/#SmoQyKPMCore.KPMExpansion"><code>KPMExpansion</code></a> in-place.</p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
+println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Vector Error = 0.014764419006946325</code></pre><p>Let us now provide the KPM approximation with better bounds on the eigenspectrum and also increase the order the of the expansion and see how the result improves. We will use the <a href="../api/#SmoQyKPMCore.kpm_update!"><code>kpm_update!</code></a> function to update the <a href="../api/#SmoQyKPMCore.KPMExpansion"><code>KPMExpansion</code></a> in-place.</p><pre><code class="language-julia hljs"># Define eigenspectrum bounds.
 bounds = (-2.5t, 2.5t)
 
 # Define order of Chebyshev expansion used in KPM approximation.
@@ -108,8 +108,8 @@ println(&quot;Matrix Error = &quot;, norm(ρ_kpm - ρ)/norm(ρ) )
 kpm_mul!(ρv_kpm, H, kpm_expansion, v, vtmp)
 
 # Check how good the approximation is.
-println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 1.0400846203803118e-14
-Vector Error = 1.0383230966583951e-14</code></pre><p>Now let me quickly demonstrate how we may approximate the the trace <span>$\rho$</span> using a set of random vector <span>$R_n$</span> using the <a href="../api/#SmoQyKPMCore.kpm_dot"><code>kpm_dot</code></a> function.</p><pre><code class="language-julia hljs"># Calculate exact trace.
+println(&quot;Vector Error = &quot;, norm(ρv_kpm - ρv) / norm(ρv) )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Matrix Error = 1.031960839804449e-14
+Vector Error = 5.6310351266932e-15</code></pre><p>Now let me quickly demonstrate how we may approximate the the trace <span>$\rho$</span> using a set of random vector <span>$R_n$</span> using the <a href="../api/#SmoQyKPMCore.kpm_dot"><code>kpm_dot</code></a> function.</p><pre><code class="language-julia hljs"># Calculate exact trace.
 trρ = tr(ρ)
 println(&quot;Exact trace = &quot;, trρ)
 
@@ -127,9 +127,9 @@ trρ_approx = kpm_dot(H, kpm_expansion, R, Rtmp)
 println(&quot;Approximate trace = &quot;, trρ_approx)
 
 # Report the error in the approximation.
-println(&quot;Trace estimate error = &quot;, abs(trρ_approx - trρ)/trρ)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Exact trace = 8.000000000000004
-Approximate trace = 7.813919840066643
-Trace estimate error = 0.023260019991670034</code></pre><h2 id="Density-of-States-Approximation"><a class="docs-heading-anchor" href="#Density-of-States-Approximation">Density of States Approximation</a><a id="Density-of-States-Approximation-1"></a><a class="docs-heading-anchor-permalink" href="#Density-of-States-Approximation" title="Permalink"></a></h2><p>Next let us demonstrate how we may approximate the density of states <span>$\mathcal{N}(\epsilon)$</span> for a 1D chain tight-binding model. The first step a very larger Hamiltonian matrix <span>$H,$</span> which we represent as a spare matrix.</p><pre><code class="language-julia hljs"># Size of 1D chain considered
+println(&quot;Trace estimate error = &quot;, abs(trρ_approx - trρ)/trρ)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Exact trace = 8.000000000000002
+Approximate trace = 8.091621095969588
+Trace estimate error = 0.01145263699619825</code></pre><h2 id="Density-of-States-Approximation"><a class="docs-heading-anchor" href="#Density-of-States-Approximation">Density of States Approximation</a><a id="Density-of-States-Approximation-1"></a><a class="docs-heading-anchor-permalink" href="#Density-of-States-Approximation" title="Permalink"></a></h2><p>Next let us demonstrate how we may approximate the density of states <span>$\mathcal{N}(\epsilon)$</span> for a 1D chain tight-binding model. The first step a very larger Hamiltonian matrix <span>$H,$</span> which we represent as a spare matrix.</p><pre><code class="language-julia hljs"># Size of 1D chain considered
 L = 10_000
 
 # Construct sparse Hamiltonian matrix.
@@ -226,4 +226,4 @@ axislegend(
     ax, halign = :center, valign = :top, labelsize = 30
 )
 
-fig</code></pre><img src="ca8dec46.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 31 March 2026 15:04">Tuesday 31 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+fig</code></pre><img src="0b0ed244.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 20 April 2026 15:34">Monday 20 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
